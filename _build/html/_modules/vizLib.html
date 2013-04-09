@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>vizLib &mdash; vizLib .01 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="vizLib .01 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><p style="font-size: 250%;">qMS module</p></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+	<li><a href="../contents.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for vizLib</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">pylab</span>
+<span class="kn">import</span> <span class="nn">scipy.cluster.hierarchy</span> <span class="kn">as</span> <span class="nn">sch</span>
+
+<div class="viewcode-block" id="findIndices"><a class="viewcode-back" href="../vizLib.html#vizLib.findIndices">[docs]</a><span class="k">def</span> <span class="nf">findIndices</span><span class="p">(</span><span class="n">g</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;findIndices is a  helper function that likely should be deleted</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">change</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="n">change</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">change</span>
+</div>
+<div class="viewcode-block" id="mapGroups"><a class="viewcode-back" href="../vizLib.html#vizLib.mapGroups">[docs]</a><span class="k">def</span> <span class="nf">mapGroups</span><span class="p">(</span><span class="n">groupList</span><span class="p">,</span> <span class="n">letters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;mapGroups is a  helper function that maps groups numbers to letters - likely should be deleted</span>
+
+<span class="sd">    :param groupList: a list to be mapped</span>
+<span class="sd">    :type d: list</span>
+<span class="sd">    :param letters: a list to be mapped onto</span>
+<span class="sd">    :type letters: list</span>
+<span class="sd">    :returns: a list with elements of groupList mapped onto the letters</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">changeList</span> <span class="o">=</span> <span class="n">findIndices</span><span class="p">(</span><span class="n">groupList</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">changeList</span><span class="p">:</span>
+        <span class="n">toReplace</span> <span class="o">=</span> <span class="n">groupList</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">groupList</span> <span class="o">=</span> <span class="n">listReplace</span><span class="p">(</span><span class="n">groupList</span><span class="p">,</span> <span class="n">toReplace</span><span class="p">,</span> <span class="n">letters</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">groupList</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="listReplace"><a class="viewcode-back" href="../vizLib.html#vizLib.listReplace">[docs]</a><span class="k">def</span> <span class="nf">listReplace</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">to</span><span class="p">,</span> <span class="n">rv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;listReplace is a helper function replaces all occurances of to with rv in a list l</span>
+
+<span class="sd">    :param l: list to be replaced</span>
+<span class="sd">    :type l: list</span>
+<span class="sd">    :param to: item to be replaced</span>
+<span class="sd">    :type to: string</span>
+<span class="sd">    :param rv: item to replace with</span>
+<span class="sd">    :type rv: string</span>
+<span class="sd">    :returns: a list with all occurances of to replaced with rv</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">to</span><span class="p">:</span>
+            <span class="n">tr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tr</span>
+</div>
+<div class="viewcode-block" id="printSortedDict"><a class="viewcode-back" href="../vizLib.html#vizLib.printSortedDict">[docs]</a><span class="k">def</span> <span class="nf">printSortedDict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;printSortedDict is a helper function to print a dictionary</span>
+
+<span class="sd">    :param d: a dictionary to be printed</span>
+<span class="sd">    :type d: dict</span>
+<span class="sd">    :returns: a string of the dictionary</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">k</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">tp</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
+        <span class="n">tp</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span> <span class="o">+</span> <span class="s">&quot;, &quot;</span>
+    <span class="k">return</span> <span class="n">tp</span>
+</div>
+<div class="viewcode-block" id="drawHeatMap"><a class="viewcode-back" href="../vizLib.html#vizLib.drawHeatMap">[docs]</a><span class="k">def</span> <span class="nf">drawHeatMap</span><span class="p">(</span><span class="n">xdat</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;unnamed&quot;</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">pylab</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">RdBu</span><span class="p">,</span> <span class="n">dendro</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">protColors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cIndex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">km</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;drawHeatMap produces a colored heatmap in a new figure window</span>
+
+<span class="sd">    :param xdat: a data object (must contain fields &#39;data&#39;, &#39;fractions&#39;, &#39;proteins&#39;)</span>
+<span class="sd">    :type xdat: dict</span>
+<span class="sd">    :param colors: a color scale (a cmap)</span>
+<span class="sd">    :type colors: cmap</span>
+<span class="sd">    :param name: figure name and title</span>
+<span class="sd">    :type name: str.</span>
+<span class="sd">    :param dendro: a boolean to draw the dendrogram on the left</span>
+<span class="sd">    :type dendro: bool.</span>
+<span class="sd">    :param protColors: a color map used to label the protein names with group colors</span>
+<span class="sd">    :type protColors: cmap</span>
+<span class="sd">    :param cIndex: a list of groupIds for the proteins</span>
+<span class="sd">    :type cIndex: list</span>
+<span class="sd">    :param km: if present, will draw the kmeans cluster profiles at the top of the figure- input is a 2d-matrix - rowVectors for each centroid, each column is a fraction</span>
+<span class="sd">    :type km: matrix</span>
+<span class="sd">    :returns:  int -- the return code.</span>
+<span class="sd">    :raises: AttributeError, KeyError</span>
+<span class="sd">    :returns: a figure object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">xdat</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span>
+    <span class="n">vecs</span> <span class="o">=</span> <span class="n">xdat</span><span class="p">[</span><span class="s">&#39;dimensions&#39;</span><span class="p">]</span>
+    <span class="n">ls</span> <span class="o">=</span> <span class="n">xdat</span><span class="p">[</span><span class="s">&#39;ls&#39;</span><span class="p">]</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="c">##Draw heatmap</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">yStart</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">yLength</span> <span class="o">=</span> <span class="mf">0.8</span>
+    <span class="k">if</span> <span class="n">dendro</span><span class="p">:</span>
+        <span class="n">xStart</span> <span class="o">=</span> <span class="mf">0.35</span>
+        <span class="n">xLength</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xStart</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="n">xLength</span> <span class="o">=</span> <span class="mf">0.8</span>
+    
+    <span class="n">figData</span> <span class="o">=</span> <span class="n">heatMapAxes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">xStart</span><span class="p">,</span> <span class="n">yStart</span><span class="p">,</span> <span class="n">xLength</span><span class="p">,</span> <span class="n">yLength</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">vecs</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">ls</span><span class="p">,</span> <span class="n">protColors</span><span class="o">=</span><span class="n">protColors</span><span class="p">,</span> <span class="n">cIndex</span><span class="o">=</span><span class="n">cIndex</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">)</span>
+    <span class="c">##Draw colorbar</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">figData</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dendro</span><span class="p">:</span>
+        <span class="n">ax2Data</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="n">offset</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">xLength</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">yLength</span><span class="p">])</span>
+        <span class="n">sch</span><span class="o">.</span><span class="n">dendrogram</span><span class="p">(</span><span class="n">xdat</span><span class="p">[</span><span class="s">&#39;rightDendro&#39;</span><span class="p">],</span> <span class="n">orientation</span><span class="o">=</span><span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="n">color_threshold</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="n">ax2Data</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax2Data</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+        
+    <span class="k">return</span> <span class="n">fig</span>
+</div>
+<div class="viewcode-block" id="heatMapAxes"><a class="viewcode-back" href="../vizLib.html#vizLib.heatMapAxes">[docs]</a><span class="k">def</span> <span class="nf">heatMapAxes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="n">pylab</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">RdBu</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">protColors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cIndex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;heatMapAxes draws a heatmap</span>
+
+<span class="sd">    :param data: a datamatrix to draw</span>
+<span class="sd">    :type xdat: a 2D Matrix</span>
+<span class="sd">    :param dims: the size of the plot to draw - defaults to full window</span>
+<span class="sd">    :type dims: list (4 eements)</span>
+<span class="sd">    :param colors: color index to use - defaults to redblue</span>
+<span class="sd">    :type colors: cmap</span>
+<span class="sd">    :param fractions: fraction names</span>
+<span class="sd">    :type fractions: list</span>
+<span class="sd">    :param proteins: protein names</span>
+<span class="sd">    :type proteins: list</span>
+<span class="sd">    :param protColors: a color map used to label the protein names with group colors</span>
+<span class="sd">    :type protColors: cmap</span>
+<span class="sd">    :param cIndex: a list of groupIds for the proteins</span>
+<span class="sd">    :type cIndex: list</span>
+<span class="sd">    :param fig: where to plot the axes (which figure); defaults to new figure</span>
+<span class="sd">    :type fig: matplotlib figure</span>
+<span class="sd">    :returns:  an axes</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">axData</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)):</span>
+        <span class="n">axData</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span> <span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">270</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s">&quot;top&quot;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&quot;center&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">protColors</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)):</span>
+            <span class="n">axData</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">0.525</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s">&#39;  &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s">&quot;center&quot;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&quot;right&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)):</span>
+            <span class="n">axData</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">0.525</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s">&#39;  &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s">&quot;center&quot;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&quot;right&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">cIndex</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">protColors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">protColors</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="n">small</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">big</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">small</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">big</span><span class="p">):</span>
+        <span class="n">big</span> <span class="o">=</span> <span class="mi">0</span><span class="o">-</span><span class="n">small</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">small</span> <span class="o">=</span> <span class="mi">0</span><span class="o">-</span><span class="n">big</span>
+    <span class="n">figData</span> <span class="o">=</span> <span class="n">axData</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s">&#39;auto&#39;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">small</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">big</span><span class="p">)</span>
+    <span class="c">#fig.colorbar(figData)</span>
+    <span class="n">axData</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">axData</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+    <span class="k">return</span> <span class="n">figData</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+	<li><a href="../contents.html">documentation </a> &raquo;</li>
+
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Joey Davis.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

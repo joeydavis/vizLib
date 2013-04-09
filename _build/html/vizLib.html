@@ -1,0 +1,234 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>qMS Module &mdash; vizLib .01 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="vizLib .01 documentation" href="index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><p style="font-size: 250%;">qMS module</p></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+	<li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/vizLib.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-vizLib">
+<span id="qms-module"></span><h1>qMS Module<a class="headerlink" href="#module-vizLib" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="vizLib.drawHeatMap">
+<tt class="descclassname">vizLib.</tt><tt class="descname">drawHeatMap</tt><big>(</big><em>xdat</em>, <em>name='unnamed'</em>, <em>colors=&lt;matplotlib.colors.LinearSegmentedColormap instance at 0x2fddb00&gt;</em>, <em>dendro=False</em>, <em>protColors=None</em>, <em>cIndex=None</em>, <em>km=None</em><big>)</big><a class="reference internal" href="_modules/vizLib.html#drawHeatMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vizLib.drawHeatMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>drawHeatMap produces a colored heatmap in a new figure window</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xdat</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; a data object (must contain fields &#8216;data&#8217;, &#8216;fractions&#8217;, &#8216;proteins&#8217;)</li>
+<li><strong>colors</strong> (<em>cmap</em>) &#8211; a color scale (a cmap)</li>
+<li><strong>name</strong> (<em>str.</em>) &#8211; figure name and title</li>
+<li><strong>dendro</strong> (<em>bool.</em>) &#8211; a boolean to draw the dendrogram on the left</li>
+<li><strong>protColors</strong> (<em>cmap</em>) &#8211; a color map used to label the protein names with group colors</li>
+<li><strong>cIndex</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; a list of groupIds for the proteins</li>
+<li><strong>km</strong> (<em>matrix</em>) &#8211; if present, will draw the kmeans cluster profiles at the top of the figure- input is a 2d-matrix - rowVectors for each centroid, each column is a fraction</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int &#8211; the return code.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">AttributeError, KeyError</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a figure object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="vizLib.findIndices">
+<tt class="descclassname">vizLib.</tt><tt class="descname">findIndices</tt><big>(</big><em>g</em><big>)</big><a class="reference internal" href="_modules/vizLib.html#findIndices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vizLib.findIndices" title="Permalink to this definition">¶</a></dt>
+<dd><p>findIndices is a  helper function that likely should be deleted</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vizLib.heatMapAxes">
+<tt class="descclassname">vizLib.</tt><tt class="descname">heatMapAxes</tt><big>(</big><em>data, dims=[0.1, 0.1, 0.7, 0.7], colors=&lt;matplotlib.colors.LinearSegmentedColormap instance at 0x2fddb00&gt;, columns=None, rows=None, protColors=None, cIndex=None, fig=None</em><big>)</big><a class="reference internal" href="_modules/vizLib.html#heatMapAxes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vizLib.heatMapAxes" title="Permalink to this definition">¶</a></dt>
+<dd><p>heatMapAxes draws a heatmap</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> &#8211; a datamatrix to draw</li>
+<li><strong>dims</strong> (<em>list (4 eements)</em>) &#8211; the size of the plot to draw - defaults to full window</li>
+<li><strong>colors</strong> (<em>cmap</em>) &#8211; color index to use - defaults to redblue</li>
+<li><strong>fractions</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; fraction names</li>
+<li><strong>proteins</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; protein names</li>
+<li><strong>protColors</strong> (<em>cmap</em>) &#8211; a color map used to label the protein names with group colors</li>
+<li><strong>cIndex</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; a list of groupIds for the proteins</li>
+<li><strong>fig</strong> (<em>matplotlib figure</em>) &#8211; where to plot the axes (which figure); defaults to new figure</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">an axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="vizLib.listReplace">
+<tt class="descclassname">vizLib.</tt><tt class="descname">listReplace</tt><big>(</big><em>l</em>, <em>to</em>, <em>rv</em><big>)</big><a class="reference internal" href="_modules/vizLib.html#listReplace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vizLib.listReplace" title="Permalink to this definition">¶</a></dt>
+<dd><p>listReplace is a helper function replaces all occurances of to with rv in a list l</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>l</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; list to be replaced</li>
+<li><strong>to</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; item to be replaced</li>
+<li><strong>rv</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; item to replace with</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list with all occurances of to replaced with rv</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="vizLib.mapGroups">
+<tt class="descclassname">vizLib.</tt><tt class="descname">mapGroups</tt><big>(</big><em>groupList</em>, <em>letters</em><big>)</big><a class="reference internal" href="_modules/vizLib.html#mapGroups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vizLib.mapGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>mapGroups is a  helper function that maps groups numbers to letters - likely should be deleted</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupList</strong> &#8211; a list to be mapped</li>
+<li><strong>letters</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; a list to be mapped onto</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list with elements of groupList mapped onto the letters</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="vizLib.printSortedDict">
+<tt class="descclassname">vizLib.</tt><tt class="descname">printSortedDict</tt><big>(</big><em>d</em><big>)</big><a class="reference internal" href="_modules/vizLib.html#printSortedDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vizLib.printSortedDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>printSortedDict is a helper function to print a dictionary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>d</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; a dictionary to be printed</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a string of the dictionary</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+	<li><a href="contents.html">documentation </a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Joey Davis.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
