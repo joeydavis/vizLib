@@ -1,6 +1,35 @@
 import math
 import matplotlib.pyplot as pylab
 import scipy.cluster.hierarchy as sch
+import qMS
+
+def makePlotWithFileList(fileList, AllProteins, pulse, numerator, denominator, proteinToNormalizeTo=None, yMax = 1.5):
+    """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
+
+    :param fileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
+    :type fileList: list of strings
+    :param AllProteins: a list of the proteins to be plotted - strings must match the keys of the datastructs
+    :type AllProteins: list
+    :param pulse: a boolean of the datasets were pulsed (must be true/false for all)
+    :type pulse: boolean
+    :param numerator: strings of the keys in the numerator (ampu, ampl, amps)
+    :type numerator: list of strings
+    :param denominator: strings of the keys in the denominator (ampu, ampl, amps)
+    :type denominator: list of strings
+    :param proteinToNormalizeTo: string of the protein to normalize to for all datasets (defaults to None)
+    :type proteinToNormalizeTo: string
+    :param yMax: float of maximum y value
+    :type yMax: float
+    :returns: the plotted axis
+    
+    """
+    stats = []
+    for i in fileList:
+        stats.append([[i[-11:-9]],qMS.getInfoToPlotStats(i, pulse, numerator,
+                      denominator, proteinToNormalizeTo)])
+    names = [i[0] for i in stats]
+    dats = [i[1] for i in stats]
+    return qMS.makePlotWithDataSets(dats, AllProteins, names, yMax=yMax)
 
 def findIndices(g):
     """findIndices is a  helper function that likely should be deleted
@@ -91,8 +120,8 @@ def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.RdBu, dendro=False, protCo
     """
 
     data = xdat['data']
-    vecs = xdat['dimensions']
-    ls = xdat['ls']
+    vecs = xdat['fractions']
+    ls = xdat['proteins']
     fig = pylab.figure()
     fig.suptitle(name)
     ##Draw heatmap
