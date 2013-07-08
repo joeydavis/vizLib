@@ -2,99 +2,153 @@ import math
 import matplotlib.pyplot as pylab
 import scipy.cluster.hierarchy as sch
 import qMS
+import numpy
 
-def makePlotWithFileList(fileList, AllProteins, pulse, numerator, denominator, proteinToNormalizeTo=None, yMax = 1.5):
+def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax = 1.5, median=False):
+    """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
+        listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
+        Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
+
+    :param statsDict: a dictionary (easily created by qMS.calcStatsDict)
+    :type statsDict: dictionary with keys of proteins names and values of numpy arrays of calcValues
+    :param name: the name of the dataset
+    :type name: string
+    :param proteins: a non-redudent list of the protein names to use (should be the IDs in dataByProtein).
+        If none is given, all of the keys will be plotted.
+    :type proteins: list
+    :param offset: where to center the point (x axis), scales 0 (left edge; default) to 1.0 (right edge)
+    :type offset: float
+    :param markerSize: size of the dots (default = 12)
+    :type markerSize: int
+    :param color: color for the dataset (default #e31a1c)
+    :type color: color
+    :param yMax: the max value for the y axis
+    :type yMax: float
+    :param median: bool to plot only the median values
+    :type median: bool
+
+    :returns:  a pyplot axis with the data plotted
+    
+        
+    """
+    
+    if proteins is None:
+        proteins = sorted(statsDict.keys())
+
+    xAxis = range(1,len(proteins)+1)
+    fig = pylab.figure(figsize=(22,5))
+    ax = fig.add_subplot(111)
+    xs = []
+    ys = []
+    for x in xAxis:
+        p = proteins[x-1]
+        if p in statsDict.keys():
+            if median:
+                xs.append(x+offset)
+                ys.append(numpy.median(statsDict[p]))
+            else:
+                for v in statsDict[p]:
+                    xs.append(x+offset)
+                    ys.append(v)
+
+    pylab.grid(b=True, which='major', color='grey', linestyle='--', axis='y', linewidth=1.5, alpha=0.5)
+    pylab.grid(b=True, which='major', color='grey', linestyle='-', axis='x', linewidth=1.5, alpha=0.75)
+    ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
+    pylab.xticks(xAxis, [item for item in proteins], rotation=45, size=15)
+    pylab.xlim(1, len(proteins)+1)
+    ####################################
+    pylab.yticks([0,yMax/5, 2*yMax/5, 3*yMax/5, 4*yMax/5, yMax], size=15)
+    ####################################
+    pylab.ylim(0, yMax)
+    return ax
+
+def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color='#377db8', median=False):
+    """addStatsDataStructToPlot adds the contents of a stats dictionary to an existing plot. ONLY PROTEINS
+        PRESENT IN THE ORIGINAL PLOT WILL BE PLOTTED IN THE NEW PLOT
+        The data is in statsDict, the axis to add to is in ax, the name is in in name.
+        Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
+
+    :param statsDict: a dictionary (easily created by calcStatsDict)
+    :type statsDict: dictionary
+    :param ax: the pyplot axis to modify
+    :type ax: pyplot axis
+    :param name: the name of the dataset
+    :type name: string
+    :param offset: where to center the point (x axis), scales 0 (left edge; default) to 1.0 (right edge)
+    :type offset: float
+    :param markerSize: size of the dots (default = 12)
+    :type markerSize: int
+    :param color: color for the dataset (default #e31a1c)
+    :type color: color
+    :param median: bool to plot only the median values
+    :type median: bool
+    :returns:  a pyplot axis with the data plotted
+        
+    """
+
+    a = ax.get_xmajorticklabels()
+    proteins = [t.get_text() for t in a]
+
+    xAxis = range(1,len(proteins)+1)
+    xs = []
+    ys = []
+    for x in xAxis:
+        p = proteins[x-1]
+        if p in statsDict.keys():
+            if median:
+                xs.append(x+offset)
+                ys.append(numpy.median(statsDict[p]))
+            else:
+                for v in statsDict[p]:
+                    xs.append(x+offset)
+                    ys.append(v)
+    ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
+    return ax
+
+def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax = 1.5, median=False, names=None, colors=None):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
-    :param fileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
-    :type fileList: list of strings
-    :param AllProteins: a list of the proteins to be plotted - strings must match the keys of the datastructs
-    :type AllProteins: list
-    :param pulse: a boolean of the datasets were pulsed (must be true/false for all)
-    :type pulse: boolean
+    :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
+    :type isoFileList: list of strings
     :param numerator: strings of the keys in the numerator (ampu, ampl, amps)
     :type numerator: list of strings
     :param denominator: strings of the keys in the denominator (ampu, ampl, amps)
     :type denominator: list of strings
-    :param proteinToNormalizeTo: string of the protein to normalize to for all datasets (defaults to None)
-    :type proteinToNormalizeTo: string
+    :param AllProteins: a list of the proteins to be plotted - strings must match the keys of the 'proteins' field in _iso.csv
+    :type AllProteins: list
+    :param normProtein: string of the protein to normalize to for all datasets (defaults to None)
+    :type normProtein: string
     :param yMax: float of maximum y value
     :type yMax: float
+    :param median: bool to plot only the median values
+    :type median: bool
+    :param names: a list of the names to be listed in the legend; must be same length as isoFileList
+    :type names: list of strings
+    :param colors: a list of the colors to be used in plotting, again must be same length as isoFileList
+    :type colors: list of strings
+
     :returns: the plotted axis
     
     """
-    stats = []
-    for i in fileList:
-        stats.append([[i[-11:-9]],qMS.getInfoToPlotStats(i, pulse, numerator,
-                      denominator, proteinToNormalizeTo)])
-    names = [i[0] for i in stats]
-    dats = [i[1] for i in stats]
-    return qMS.makePlotWithDataSets(dats, AllProteins, names, yMax=yMax)
 
-def findIndices(g):
-    """findIndices is a  helper function that likely should be deleted
+    allStats = qMS.multiStatsDict(isoFileList, numerator, denominator, normalization=1.0, offset=0.0, normProtein=normProtein)
     
-    """
-    change = [0]
-    seen = [g[0]]
-    for i in range(1, len(g)):
-        if not g[i] in seen:
-            change.append(i)
-            seen.append(g[i])
-    return change
-
-def mapGroups(groupList, letters):
-    """mapGroups is a  helper function that maps groups numbers to letters - likely should be deleted
-
-    :param groupList: a list to be mapped
-    :type d: list
-    :param letters: a list to be mapped onto
-    :type letters: list
-    :returns: a list with elements of groupList mapped onto the letters
+    if names is None:
+        names = isoFileList
     
-    """
-    changeList = findIndices(groupList)
-    i = 0
-    for index in changeList:
-        toReplace = groupList[index]
-        groupList = listReplace(groupList, toReplace, letters[i])
-        i = i+1
-    return list(groupList)
-
-def listReplace(l, to, rv):
-    """listReplace is a helper function replaces all occurances of to with rv in a list l
-
-    :param l: list to be replaced
-    :type l: list
-    :param to: item to be replaced
-    :type to: string
-    :param rv: item to replace with
-    :type rv: string
-    :returns: a list with all occurances of to replaced with rv
+    if colors is None:
+        colors= ['#377db8' for i in isoFileList]
     
-    """
-    tr = []
-    for i in l:
-        if i == to:
-            tr.append(rv)
-        else:
-            tr.append(i)
-    return tr
+    offsets = float(len(isoFileList)+1)
 
-def printSortedDict(d):
-    """printSortedDict is a helper function to print a dictionary
-
-    :param d: a dictionary to be printed
-    :type d: dict
-    :returns: a string of the dictionary
-    
-    """
-    k = d.keys()
-    k.sort()
-    tp = ''
-    for i in k:
-        tp = tp + str(i) + ":" + str(d[str(i)]) + ", "
-    return tp
+    ax = plotStatsDict( allStats[isoFileList[0]], name=names[0], proteins=AllProteins, \
+                        offset=1.0/offsets, markerSize=(10.0/offsets)+4, yMax=yMax, median=median, color=colors[0])
+    i = 1
+    for k in isoFileList[1:]:
+        ax = addStatsDictToPlot(allStats[k], ax, name=names[i], \
+                                offset=(1.0/offsets)*(i+1.25), markerSize=(10.0/offsets)+4, median=median, color=colors[i])
+        i = i + 1
+    return ax
 
 def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.RdBu, dendro=False, protColors=None, cIndex=None, km=None):
     """drawHeatMap produces a colored heatmap in a new figure window
@@ -192,3 +246,33 @@ def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.RdBu, columns=N
     axData.set_yticks([])
 
     return figData
+
+def findIndices(g):
+    """findIndices is a  helper function that likely should be deleted
+    
+    """
+    change = [0]
+    seen = [g[0]]
+    for i in range(1, len(g)):
+        if not g[i] in seen:
+            change.append(i)
+            seen.append(g[i])
+    return change
+    
+def mapGroups(groupList, letters):
+    """mapGroups is a  helper function that maps groups numbers to letters - likely should be deleted
+
+    :param groupList: a list to be mapped
+    :type d: list
+    :param letters: a list to be mapped onto
+    :type letters: list
+    :returns: a list with elements of groupList mapped onto the letters
+    
+    """
+    changeList = findIndices(groupList)
+    i = 0
+    for index in changeList:
+        toReplace = groupList[index]
+        groupList = listReplace(groupList, toReplace, letters[i])
+        i = i+1
+    return list(groupList)
