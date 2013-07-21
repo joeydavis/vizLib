@@ -3,7 +3,62 @@ import matplotlib.pyplot as pylab
 import scipy.cluster.hierarchy as sch
 import qMS
 import numpy
+import matplotlib
 
+def setRcs(scale=None):
+    """setRcs sets a series of rc params for matplotlib tomake decent looking plots. Also some useful def
+    in there to cutomize things.
+
+    :param scale: the default font scale
+    :type scale: float
+    
+    :returns:  nothing, edits the rcparam file.
+            
+    """
+    if scale is None:
+        scale = 12
+    
+    defaultFont = {'family' : 'serif',
+                   'variant' : 'normal',
+                   'weight' : 400,
+                   'size' : scale*1}
+
+    axisFont = {'titlesize' : scale*1.5,
+                'labelsize' : scale*1.25}
+
+    xAxisTicks = {'major.size' : 8,
+                  'minor.size' : 4,
+                  'major.width' : 1,
+                  'minor.width' : 1,
+                  'labelsize' : scale*1,
+                  'minor.pad' : 3,
+                  'major.pad' : 3}
+
+    yAxisTicks = {'major.size' : 8,
+                  'minor.size' : 4,
+                  'major.width' : 1,
+                  'minor.width' : 1,
+                  'labelsize' : scale*1,
+                  'minor.pad' : 3,
+                  'major.pad' : 3}
+
+    legend = {'fancybox' : True,
+              'numpoints' : 1,
+              'fontsize' : scale*0.85,
+              'borderaxespad' : 1}
+
+    matplotlib.rc('font', **defaultFont)
+    matplotlib.rc('axes', **axisFont)
+    matplotlib.rc('xtick', **xAxisTicks)
+    matplotlib.rc('ytick', **yAxisTicks)
+    matplotlib.rc('legend', **legend)
+
+    matplotlib.rc('lines', linewidth=2)
+    matplotlib.rc('axes', linewidth=3)
+    ##AXISNAME.xaxis.set_ticks_position('bottom')
+    ##AXISNAME.yaxis.set_ticks_position('left')
+    ##AXISNAME.xaxis.labelpad = 2
+    
 def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax = 1.5, median=False):
     """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
         listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
