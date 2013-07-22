@@ -58,8 +58,8 @@ def setRcs(scale=None):
     ##AXISNAME.xaxis.set_ticks_position('bottom')
     ##AXISNAME.yaxis.set_ticks_position('left')
     ##AXISNAME.xaxis.labelpad = 2
-    
-def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax = 1.5, median=False):
+
+def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax = 1.5, median=False, figSize = (22,5)):
     """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
         listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
         Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
@@ -88,10 +88,11 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     """
     
     if proteins is None:
-        proteins = sorted(statsDict.keys())
+        #proteins = sorted(statsDict.keys())
+        proteins = qMS.sort_nicely(statsDict.keys())
 
     xAxis = range(1,len(proteins)+1)
-    fig = pylab.figure(figsize=(22,5))
+    fig = pylab.figure(figsize=figSize)
     ax = fig.add_subplot(111)
     xs = []
     ys = []
@@ -160,7 +161,7 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
     ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
     return ax
 
-def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax = 1.5, median=False, names=None, colors=None):
+def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax = 1.5, median=False, names=None, colors=None, figSize=(22,5)):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
@@ -197,7 +198,7 @@ def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, 
     offsets = float(len(isoFileList)+1)
 
     ax = plotStatsDict( allStats[isoFileList[0]], name=names[0], proteins=AllProteins, \
-                        offset=1.0/offsets, markerSize=(10.0/offsets)+4, yMax=yMax, median=median, color=colors[0])
+                        offset=1.0/offsets, markerSize=(10.0/offsets)+4, yMax=yMax, median=median, color=colors[0], figSize=figSize)
     i = 1
     for k in isoFileList[1:]:
         ax = addStatsDictToPlot(allStats[k], ax, name=names[i], \
