@@ -59,7 +59,7 @@ def setRcs(scale=None):
     ##AXISNAME.yaxis.set_ticks_position('left')
     ##AXISNAME.xaxis.labelpad = 2
 
-def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax = 1.5, median=False, figSize = (22,5)):
+def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, median=False, figSize = (22,5)):
     """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
         listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
         Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
@@ -161,7 +161,7 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
     ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
     return ax
 
-def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax = 1.5, median=False, names=None, colors=None, figSize=(22,5)):
+def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax=1.5, median=False, names=None, colors=None, figSize=(22,5)):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
