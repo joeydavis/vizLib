@@ -5,7 +5,7 @@ import qMS
 import numpy
 import matplotlib
 
-def setRcs(scale=None):
+def setRcs(scale=None, legendScale=None):
     """setRcs sets a series of rc params for matplotlib tomake decent looking plots. Also some useful def
     in there to cutomize things.
 
@@ -17,6 +17,8 @@ def setRcs(scale=None):
     """
     if scale is None:
         scale = 12
+    if legendScale is None:
+        legendScale = scale*0.85
     
     defaultFont = {'family' : 'serif',
                    'variant' : 'normal',
@@ -44,7 +46,7 @@ def setRcs(scale=None):
 
     legend = {'fancybox' : True,
               'numpoints' : 1,
-              'fontsize' : scale*0.85,
+              'fontsize' : legendScale,
               'borderaxespad' : 1}
 
     matplotlib.rc('font', **defaultFont)
@@ -161,7 +163,8 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
     ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
     return ax
 
-def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax=1.5, median=False, names=None, colors=None, figSize=(22,5)):
+def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax=1.5, 
+                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
@@ -196,13 +199,15 @@ def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, 
         colors= ['#377db8' for i in isoFileList]
     
     offsets = float(len(isoFileList)+1)
+    if markerSize is None:
+        markerSize = (20.0/offsets)+4
 
     ax = plotStatsDict( allStats[isoFileList[0]], name=names[0], proteins=AllProteins, \
-                        offset=1.0/offsets, markerSize=(10.0/offsets)+4, yMax=yMax, median=median, color=colors[0], figSize=figSize)
+                        offset=1.0/offsets, markerSize=markerSize, yMax=yMax, median=median, color=colors[0], figSize=figSize)
     i = 1
     for k in isoFileList[1:]:
         ax = addStatsDictToPlot(allStats[k], ax, name=names[i], \
-                                offset=(1.0/offsets)*(i+1.25), markerSize=(10.0/offsets)+4, median=median, color=colors[i])
+                                offset=(1.0/offsets)*(i+1.25), markerSize=markerSize, median=median, color=colors[i])
         i = i + 1
     return ax
 
