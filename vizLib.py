@@ -61,7 +61,7 @@ def setRcs(scale=None, legendScale=None):
     ##AXISNAME.yaxis.set_ticks_position('left')
     ##AXISNAME.xaxis.labelpad = 2
 
-def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, median=False, figSize = (22,5)):
+def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, median=False, figSize = (22,5), noFill=False, mew=1):
     """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
         listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
         Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
@@ -111,16 +111,21 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
 
     pylab.grid(b=True, which='major', color='grey', linestyle='--', axis='y', linewidth=1.5, alpha=0.5)
     pylab.grid(b=True, which='major', color='grey', linestyle='-', axis='x', linewidth=1.5, alpha=0.75)
-    ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
+    if noFill:
+        ax.plot(xs, ys, 'o', color='none', markeredgecolor=color, mew=mew, markersize=markerSize, label=name)
+    else:
+        ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
+
     pylab.xticks(xAxis, [item for item in proteins], rotation=45, size=15)
     pylab.xlim(1, len(proteins)+1)
     ####################################
     pylab.yticks([0,yMax/5, 2*yMax/5, 3*yMax/5, 4*yMax/5, yMax], size=15)
     ####################################
     pylab.ylim(0, yMax)
+    ax.set_axisbelow(True)
     return ax
 
-def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color='#377db8', median=False):
+def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color='#377db8', median=False, noFill=False, mew=1):
     """addStatsDataStructToPlot adds the contents of a stats dictionary to an existing plot. ONLY PROTEINS
         PRESENT IN THE ORIGINAL PLOT WILL BE PLOTTED IN THE NEW PLOT
         The data is in statsDict, the axis to add to is in ax, the name is in in name.
@@ -160,11 +165,17 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
                 for v in statsDict[p]:
                     xs.append(x+offset)
                     ys.append(v)
-    ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
+
+    if noFill:
+        ax.plot(xs, ys, 'o', color='none', markeredgecolor=color, mew=mew, markersize=markerSize, label=name)
+    else:
+        ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
+
+    ax.set_axisbelow(True)
     return ax
 
 def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, normProtein=None, yMax=1.5, 
-                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None):
+                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
@@ -203,12 +214,63 @@ def makePlotWithFileList(isoFileList, numerator, denominator, AllProteins=None, 
         markerSize = (20.0/offsets)+4
 
     ax = plotStatsDict( allStats[isoFileList[0]], name=names[0], proteins=AllProteins, \
-                        offset=1.0/offsets, markerSize=markerSize, yMax=yMax, median=median, color=colors[0], figSize=figSize)
+                        offset=1.0/offsets, markerSize=markerSize, yMax=yMax, median=median, color=colors[0], figSize=figSize, noFill=noFill, mew=mew)
     i = 1
     for k in isoFileList[1:]:
         ax = addStatsDictToPlot(allStats[k], ax, name=names[i], \
-                                offset=(1.0/offsets)*(i+1.25), markerSize=markerSize, median=median, color=colors[i])
+                                offset=(1.0/offsets)*(i+1.25), markerSize=markerSize, median=median, color=colors[i], noFill=noFill, mew=mew)
         i = i + 1
+        ax.set_axisbelow(True)
+    return ax
+
+def makePlotWithStatsDictList(allStats, numerator, denominator, AllProteins=None, normProtein=None, yMax=1.5, 
+                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1):
+    """makePlotWithStatsDictList is a  helper function that plots massage-style data from a list of statsDicts
+
+    :param statsDictList: a list of the statsDicts to be ploted (should be data structure)
+    :type statsDictList: list of statsDicts
+    :param numerator: strings of the keys in the numerator (ampu, ampl, amps)
+    :type numerator: list of strings
+    :param denominator: strings of the keys in the denominator (ampu, ampl, amps)
+    :type denominator: list of strings
+    :param AllProteins: a list of the proteins to be plotted - strings must match the keys of the 'proteins' field in _iso.csv
+    :type AllProteins: list
+    :param normProtein: string of the protein to normalize to for all datasets (defaults to None)
+    :type normProtein: string
+    :param yMax: float of maximum y value
+    :type yMax: float
+    :param median: bool to plot only the median values
+    :type median: bool
+    :param names: a list of the names to be listed in the legend; must be same length as isoFileList
+    :type names: list of strings
+    :param colors: a list of the colors to be used in plotting, again must be same length as isoFileList
+    :type colors: list of strings
+
+    :returns: the plotted axis
+    
+    """
+    
+    if names is None:
+        names = allStats.keys()
+    
+    if colors is None:
+        colors= ['#377db8' for i in allStats]
+    
+    offsets = float(len(allStats)+1)
+    if markerSize is None:
+        markerSize = (20.0/offsets)+4
+
+    print allStats[0]
+    ax = plotStatsDict( allStats[0], name=names[0], proteins=AllProteins, \
+                        offset=1.0/offsets, markerSize=markerSize, yMax=yMax, median=median, color=colors[0], figSize=figSize, noFill=noFill, mew=mew)
+        
+    i = 1
+    for k in range(1,len(allStats)):
+        ax = addStatsDictToPlot(allStats[k], ax, name=names[i], \
+                                offset=(1.0/offsets)*(i+1.25), markerSize=markerSize, median=median, color=colors[i], noFill=noFill, mew=mew)
+        i = i + 1
+        ax.set_axisbelow(True)
+    
     return ax
 
 def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.RdBu, dendro=False, protColors=None, cIndex=None, km=None):
