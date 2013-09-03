@@ -6,7 +6,7 @@ import numpy
 import matplotlib
 from mpl_toolkits.mplot3d import Axes3D
 
-def setRcs(scale=None, legendScale=None):
+def setRcs(scale=None, legendScale=None, tickScale=1):
     """setRcs sets a series of rc params for matplotlib tomake decent looking plots. Also some useful def
     in there to cutomize things.
 
@@ -21,7 +21,7 @@ def setRcs(scale=None, legendScale=None):
     if legendScale is None:
         legendScale = scale*0.85
     
-    defaultFont = {'family' : 'serif',
+    defaultFont = {'family' : 'sans-serif',
                    'variant' : 'normal',
                    'weight' : 400,
                    'size' : scale*1}
@@ -29,18 +29,18 @@ def setRcs(scale=None, legendScale=None):
     axisFont = {'titlesize' : scale*1.5,
                 'labelsize' : scale*1.25}
 
-    xAxisTicks = {'major.size' : 8,
-                  'minor.size' : 4,
-                  'major.width' : 1,
-                  'minor.width' : 1,
+    xAxisTicks = {'major.size' : 8.0*tickScale,
+                  'minor.size' : 4.0*tickScale,
+                  'major.width' : 1.0*tickScale,
+                  'minor.width' : 1.0*tickScale,
                   'labelsize' : scale*1,
                   'minor.pad' : 3,
                   'major.pad' : 3}
 
-    yAxisTicks = {'major.size' : 8,
-                  'minor.size' : 4,
-                  'major.width' : 1,
-                  'minor.width' : 1,
+    yAxisTicks = {'major.size' : 8.0*tickScale,
+                  'minor.size' : 4.0*tickScale,
+                  'major.width' : 1.0*tickScale,
+                  'minor.width' : 1.0*tickScale,
                   'labelsize' : scale*1,
                   'minor.pad' : 3,
                   'major.pad' : 3}
@@ -537,7 +537,7 @@ def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.RdBu, dendro=False, protCo
 
     if dendro:
         ax2Data = fig.add_axes([offset, offset, xLength-0.3, yLength])
-        sch.dendrogram(xdat['rightDendro'], orientation='right', color_threshold=8)
+        sch.dendrogram(xdat['rightDendro'], orientation='right', color_threshold=1)
         ax2Data.set_xticks([])
         ax2Data.set_yticks([])
     
@@ -595,7 +595,7 @@ def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.RdBu, columns=N
     figData = axData.imshow(masked_array, interpolation='nearest', cmap=colors, aspect='auto', origin='lower')
     ##Draw colorbar
     if colorBar:
-        fig.colorbar(figData, ax=axData, ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6], pad=0.01, extend='neither')
+        fig.colorbar(figData, ax=axData, ticks=[0, 0.25, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0], pad=0.01, extend='neither')
     
     axData.set_xticks([])
     axData.set_yticks([])
