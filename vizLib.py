@@ -121,7 +121,7 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     pylab.xticks(xAxis, [item for item in proteins], rotation=45, size=15)
     pylab.xlim(1, len(proteins)+1)
     ####################################
-    pylab.yticks([0,yMax/5, 2*yMax/5, 3*yMax/5, 4*yMax/5, yMax], size=15)
+    pylab.yticks([0,yMax/5.0, 2*yMax/5.0, 3*yMax/5.0, 4*yMax/5.0, yMax], size=15)
     ####################################
     pylab.ylim(-0.05, yMax)
     ax.set_axisbelow(True)
@@ -492,6 +492,7 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
     
     return ax
 
+'''
 def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.RdBu, dendro=False, protColors=None, 
                 cIndex=None, km=None, nameList=None, scale=None, saveName=None):
     """drawHeatMap produces a colored heatmap in a new figure window
@@ -534,22 +535,99 @@ def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.RdBu, dendro=False, protCo
     
     figAxes = heatMapAxes(data, dims = [xStart, yStart, xLength, yLength], colors=colors, columns=nameList, rows=ls, protColors=protColors, cIndex=cIndex, fig=fig, colorBar=True)
     figAxes.set_title(name)
-
     if dendro:
         ax2Data = fig.add_axes([offset, offset, xLength-0.3, yLength])
         sch.dendrogram(xdat['rightDendro'], orientation='right', color_threshold=1)
-        ax2Data.set_xticks([])
-        ax2Data.set_yticks([])
-    
     if not (scale is None):
         figAxes.text(1.15, 0.5, scale, rotation=270, verticalalignment="center", 
                      horizontalalignment="center", fontsize=18, transform=figAxes.transAxes)
-    
-    if not (saveName is None):
+   if not (saveName is None):
         pylab.savefig(saveName)
     return fig
+'''
 
-def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.RdBu, columns=None, rows=None, protColors=None, cIndex=None, fig=None, colorBar=True):
+def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.autumn, dendro=False, protColors=None, cIndex=None, km=None,
+                nameList=None, scale=None, saveName=None, colorBar=False, figSize=(6,6)):
+    """drawHeatMap produces a colored heatmap in a new figure window
+
+    :param xdat: a data object (must contain fields 'data', 'fractions', 'proteins')
+    :type xdat: dict
+    :param colors: a color scale (a cmap)
+    :type colors: cmap
+    :param name: figure name and title
+    :type name: str.
+    :param dendro: a boolean to draw the dendrogram on the left
+    :type dendro: bool.
+    :param protColors: a color map used to label the protein names with group colors
+    :type protColors: cmap
+    :param cIndex: a list of groupIds for the proteins
+    :type cIndex: list
+    :param km: if present, will draw the kmeans cluster profiles at the top of the figure- input is a 2d-matrix - rowVectors for each centroid, each column is a fraction
+    :type km: matrix
+    :returns:  int -- the return code.
+    :raises: AttributeError, KeyError
+    :returns: a figure object
+
+    """
+
+    data = xdat['data']
+    if nameList is None:
+        nameList = xdat['fractions']
+
+    #fractions = xdat['fractions']
+    proteins = xdat['proteins']
+    fig = pylab.figure(figsize=figSize)
+    fig.suptitle(name)
+    ##Draw heatmap
+    offset = 0.1
+    if dendro:
+        xStart = 0.35
+        xLength = 0.5
+    else:
+        xStart = 0.1
+        xLength = 0.8
+    if km is None:
+        yStart = 0.1
+        yLength = 0.8
+    else:
+        yStart = 0.1
+        yLength = 0.7
+    figAxes = heatMapAxes(data, dims = [xStart, yStart, xLength, yLength], columns=nameList, rows=proteins, protColors=protColors, cIndex=cIndex, fig=fig, colors=colors)
+    ##Draw colorbar
+    if colorBar:
+        fig.colorbar(figAxes)
+
+    if dendro:
+        ax2Data = fig.add_axes([offset, offset, xLength-0.3, yLength])
+        sch.dendrogram(xdat['rightDendro'], orientation='right', color_threshold=0.0)
+        ax2Data.set_xticks([])
+        ax2Data.set_yticks([])
+
+#    if not (scale is None):
+ #       figAxes.text(1.15, 0.5, scale, rotation=270, verticalalignment="center", 
+  #                   horizontalalignment="center", fontsize=18, transform=figAxes.transAxes)    
+    
+    if not km is None:
+        small = data.min()
+        big = data.max()
+        if math.fabs(small) > math.fabs(big):
+            big = 0-small
+        else:
+            small = 0-big
+        ax3Data = fig.add_axes([xStart, yLength+offset, xLength-0.1, 0.1])
+        ax3Data.matshow(km, aspect='auto', origin='lower', cmap=colors, vmin=small, vmax=big)
+        for i in range(len(km)):
+            ax3Data.text(-0.75, i, 'clus'+str(i), verticalalignment="center", horizontalalignment="right", fontsize=12, color=cIndex(float(i)/(protColors.max()+1)))
+        ax3Data.set_xticks([])
+        ax3Data.set_yticks([])
+    #fig.tight_layout()
+    if not (saveName is None):
+        pylab.savefig(saveName)
+        
+    return fig
+
+'''
+def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.RdBu, columns=None, rows=None, protColors=None, cIndex=None, fig=None, colorBar=False):
     """heatMapAxes draws a heatmap
 
     :param data: a datamatrix to draw
@@ -571,6 +649,7 @@ def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.RdBu, columns=N
     :returns:  an axes
 
     """
+    
     if fig is None:
         fig = pylab.figure()
     axData = fig.add_axes(dims)
@@ -582,25 +661,74 @@ def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.RdBu, columns=N
     else:
         for i in range(len(rows)):
             axData.text(-0.6, i, '  '+str(rows[i]), verticalalignment="center", horizontalalignment="right", fontsize=14, color=cIndex(float(protColors[i])/(protColors.max()+1)))
-    '''
+    
     small = data.min()
     big = data.max()
     if math.fabs(small) > math.fabs(big):
         big = 0-small
     else:
         small = 0-big
-    '''
+    
     masked_array = numpy.ma.array (data, mask=numpy.isnan(data))
     colors.set_bad('grey',1.)
     figData = axData.imshow(masked_array, interpolation='nearest', cmap=colors, aspect='auto', origin='lower')
     ##Draw colorbar
     if colorBar:
-        fig.colorbar(figData, ax=axData, ticks=[0, 0.25, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0], pad=0.01, extend='neither')
+        fig.colorbar(figData, ax=axData, ticks=[0, 0.25, 0.50, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0], pad=0.01, extend='neither')
     
     axData.set_xticks([])
     axData.set_yticks([])
 
     return axData
+'''
+
+def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.autumn, columns=None, rows=None, protColors=None, cIndex=None, fig=None, colorBar=False):
+    """heatMapAxes draws a heatmap
+
+    :param data: a datamatrix to draw
+    :type xdat: a 2D Matrix
+    :param dims: the size of the plot to draw - defaults to full window
+    :type dims: list (4 elements)
+    :param colors: color index to use - defaults to redblue
+    :type colors: cmap
+    :param fractions: fraction names
+    :type fractions: list
+    :param proteins: protein names
+    :type proteins: list
+    :param protColors: a color map used to label the protein names with group colors
+    :type protColors: cmap
+    :param cIndex: a list of groupIds for the proteins
+    :type cIndex: list
+    :param fig: where to plot the axes (which figure); defaults to new figure
+    :type fig: matplotlib figure
+    :returns:  an axes
+
+    """
+    if fig is None:
+        fig = pylab.figure()
+    axData = fig.add_axes(dims)
+    for i in range(len(columns)):
+        axData.text(i, -0.5 , ' '+str(columns[i]), rotation=270, verticalalignment="top", horizontalalignment="center", fontsize=12)
+    if protColors == None:
+        for i in range(len(rows)):
+            axData.text(-0.75, i, '  '+str(rows[i]), verticalalignment="center", horizontalalignment="right", fontsize=12)
+    else:
+        for i in range(len(rows)):
+            axData.text(-0.75, i, '  '+str(rows[i]), verticalalignment="center", horizontalalignment="right", fontsize=12, color=cIndex(float(protColors[i])/(protColors.max()+1)))
+    small = data.min()
+    big = data.max()
+    if math.fabs(small) > math.fabs(big):
+        big = 0-small
+    else:
+        small = 0-big
+    masked_array = numpy.ma.array (data, mask=numpy.isnan(data))
+    colors.set_bad('grey',1.)
+    figData = axData.imshow(masked_array, interpolation='nearest', cmap=colors, aspect='auto', origin='lower')
+    if colorBar:
+        fig.colorbar(figData, ax=axData, ticks=[0, 0.25, 0.50, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0], pad=0.01, extend='neither')
+    axData.set_xticks([])
+    axData.set_yticks([])
+    return figData
 
 def findIndices(g):
     """findIndices is a  helper function that likely should be deleted
