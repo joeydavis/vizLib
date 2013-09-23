@@ -546,7 +546,7 @@ def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.RdBu, dendro=False, protCo
     return fig
 '''
 
-def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.autumn, dendro=False, protColors=None, cIndex=None, km=None,
+def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.Reds, dendro=False, protColors=None, cIndex=None, km=None,
                 nameList=None, scale=None, saveName=None, colorBar=False, figSize=(6,6)):
     """drawHeatMap produces a colored heatmap in a new figure window
 
@@ -577,7 +577,8 @@ def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.autumn, dendro=False, prot
     #fractions = xdat['fractions']
     proteins = xdat['proteins']
     fig = pylab.figure(figsize=figSize)
-    fig.suptitle(name)
+    if not (name is None):
+        fig.suptitle(name)
     ##Draw heatmap
     offset = 0.1
     if dendro:
@@ -588,10 +589,10 @@ def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.autumn, dendro=False, prot
         xLength = 0.8
     if km is None:
         yStart = 0.1
-        yLength = 0.8
+        yLength = 0.75
     else:
-        yStart = 0.1
-        yLength = 0.7
+        yStart = 0.05
+        yLength = 0.85
     figAxes = heatMapAxes(data, dims = [xStart, yStart, xLength, yLength], columns=nameList, rows=proteins, protColors=protColors, cIndex=cIndex, fig=fig, colors=colors)
     ##Draw colorbar
     if colorBar:
@@ -617,7 +618,7 @@ def drawHeatMap(xdat, name="unnamed", colors=pylab.cm.autumn, dendro=False, prot
         ax3Data = fig.add_axes([xStart, yLength+offset, xLength-0.1, 0.1])
         ax3Data.matshow(km, aspect='auto', origin='lower', cmap=colors, vmin=small, vmax=big)
         for i in range(len(km)):
-            ax3Data.text(-0.75, i, 'clus'+str(i), verticalalignment="center", horizontalalignment="right", fontsize=12, color=cIndex(float(i)/(protColors.max()+1)))
+            ax3Data.text(-0.75, i, 'clus'+str(i), verticalalignment="center", horizontalalignment="right", fontsize=10, color=cIndex(float(i)/(protColors.max()+1)))
         ax3Data.set_xticks([])
         ax3Data.set_yticks([])
     #fig.tight_layout()
