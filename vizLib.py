@@ -118,11 +118,15 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     else:
         ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
 
-    pylab.xticks(xAxis, [item for item in proteins], rotation=45, size=15)
+    pylab.xticks(xAxis, [item for item in proteins], rotation=45)
     pylab.xlim(1, len(proteins)+1)
     ####################################
-    pylab.yticks([0,yMax/5.0, 2*yMax/5.0, 3*yMax/5.0, 4*yMax/5.0, yMax], size=15)
     ####################################
+    if yMin == -0.05:
+        sub = 0.0
+    else:
+        sub = yMin
+    pylab.yticks([0, (yMax-sub)/5.0, 2*(yMax-sub)/5.0, 3*(yMax-sub)/5.0, 4*(yMax-sub)/5.0, (yMax-sub)])
     pylab.ylim(yMin, yMax)
     ax.set_axisbelow(True)
     return ax
