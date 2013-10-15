@@ -15,7 +15,7 @@ def setRcs(scale=None, legendScale=None, tickScale=1):
     
     :returns:  nothing, edits the rcparam file.
             
-    """
+    """ 
     if scale is None:
         scale = 12
     if legendScale is None:
