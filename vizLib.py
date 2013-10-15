@@ -63,7 +63,7 @@ def setRcs(scale=None, legendScale=None, tickScale=1):
     ##AXISNAME.xaxis.labelpad = 2
 
 def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, 
-                  median=False, figSize = (22,5), noFill=False, mew=1):
+                  median=False, figSize = (22,5), noFill=False, mew=1, yMin=-0.05):
     """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
         listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
         Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
@@ -123,7 +123,7 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     ####################################
     pylab.yticks([0,yMax/5.0, 2*yMax/5.0, 3*yMax/5.0, 4*yMax/5.0, yMax], size=15)
     ####################################
-    pylab.ylim(-0.05, yMax)
+    pylab.ylim(yMin, yMax)
     ax.set_axisbelow(True)
     return ax
 
@@ -182,7 +182,7 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
     return ax
 
 def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, normProtein=None, yMax=1.5, 
-                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1):
+                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
@@ -221,10 +221,10 @@ def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, nor
     
     return makePlotWithStatsDictDict(allStats, subunits=subunits, yMax=yMax,
                                      median=median, namesList=namesList, colors=colors, figSize=figSize, markerSize=markerSize,
-                                     noFill=noFill, mew=mew)
+                                     noFill=noFill, mew=mew, yMin=yMin)
 
 def makePlotWithStatsDictDict(allStats, subunits=None, yMax=1.5, 
-                         median=False, namesList=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1):
+                         median=False, namesList=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05):
     """makePlotWithStatsDictDict is a  helper function that plots massage-style data from a dict of statsDicts
 
     :param allStats: dictionary of stats dictionaries (returned by multiStatsDict)
@@ -266,7 +266,7 @@ def makePlotWithStatsDictDict(allStats, subunits=None, yMax=1.5,
 
     ax = plotStatsDict( allStats[namesList[0][0]], name=namesList[0][1], proteins=subunits, \
                         offset=1.0/offsets, markerSize=markerSize, yMax=yMax, median=median, 
-                        color=colors[0], figSize=figSize, noFill=noFill, mew=mew)
+                        color=colors[0], figSize=figSize, noFill=noFill, mew=mew, yMin=yMin)
         
     for i in range(1,len(namesList)):
         ax = addStatsDictToPlot(allStats[namesList[i][0]], ax, name=namesList[i][1], \
