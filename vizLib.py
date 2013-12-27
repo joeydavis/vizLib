@@ -4,8 +4,71 @@ import scipy.cluster.hierarchy as sch
 import qMS
 import numpy
 import matplotlib
-from mpl_toolkits.mplot3d import Axes3D
+import brewer2mpl
 
+def getBCs(a,n):
+    if a is 'q':
+        t='Qualitative'
+        name='Set1'
+    elif a is 's':
+        t='Sequential'
+        name='Blues'
+    elif a is 'd':
+        t='Diverging'
+        name='RdBu'
+    elif a is 'p':
+        t='Qualitative'
+        name='Paired'
+        
+    else:
+        print 'incorrect color type given, expected "q", "s", "p", or "d"'
+        return 'ERROR'
+    bmap = brewer2mpl.get_map(name, t, n)
+    return bmap.mpl_colors
+
+
+def rstyle(ax): 
+    """Styles an axes to appear like ggplot2
+    Must be called after all plot and axis manipulation operations have been carried out (needs to know final tick spacing)
+    """
+    #set the style of the major and minor grid lines, filled blocks
+    ax.grid(True, 'major', color='w', linestyle='-', linewidth=1.4)
+    ax.grid(True, 'minor', color='0.92', linestyle='-', linewidth=0.7)
+    ax.patch.set_facecolor('0.85')
+    ax.set_axisbelow(True)
+    
+    #set minor tick spacing to 1/2 of the major ticks
+    ax.xaxis.set_minor_locator(pylab.MultipleLocator( (pylab.xticks()[0][1]-pylab.xticks()[0][0]) / 2.0 ))
+    ax.yaxis.set_minor_locator(pylab.MultipleLocator( (pylab.yticks()[0][1]-pylab.yticks()[0][0]) / 2.0 ))
+    
+    #remove axis border
+    for child in ax.get_children():
+        if isinstance(child, matplotlib.spines.Spine):
+            child.set_alpha(0)
+       
+    #restyle the tick lines
+    for line in ax.get_xticklines() + ax.get_yticklines():
+        line.set_markersize(5)
+        line.set_color("gray")
+        line.set_markeredgewidth(1.4)
+    
+    #remove the minor tick lines    
+    for line in ax.xaxis.get_ticklines(minor=True) + ax.yaxis.get_ticklines(minor=True):
+        line.set_markersize(0)
+    
+    #only show bottom left ticks, pointing out of axis
+    pylab.rcParams['xtick.direction'] = 'out'
+    pylab.rcParams['ytick.direction'] = 'out'
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    
+    
+    if ax.legend_ <> None:
+        lg = ax.legend_
+        lg.get_frame().set_linewidth(0)
+        lg.get_frame().set_alpha(0.5)
+        
+        
 def setRcs(scale=None, legendScale=None, tickScale=1):
     """setRcs sets a series of rc params for matplotlib tomake decent looking plots. Also some useful def
     in there to cutomize things.
@@ -35,7 +98,8 @@ def setRcs(scale=None, legendScale=None, tickScale=1):
                   'minor.width' : 1.0*tickScale,
                   'labelsize' : scale*1,
                   'minor.pad' : 3,
-                  'major.pad' : 3}
+                  'major.pad' : 3,
+                  'direction' : 'out'}
 
     yAxisTicks = {'major.size' : 8.0*tickScale,
                   'minor.size' : 4.0*tickScale,
@@ -43,7 +107,8 @@ def setRcs(scale=None, legendScale=None, tickScale=1):
                   'minor.width' : 1.0*tickScale,
                   'labelsize' : scale*1,
                   'minor.pad' : 3,
-                  'major.pad' : 3}
+                  'major.pad' : 3,
+                  'direction' : 'out'}
 
     legend = {'fancybox' : True,
               'numpoints' : 1,
@@ -58,9 +123,14 @@ def setRcs(scale=None, legendScale=None, tickScale=1):
 
     matplotlib.rc('lines', linewidth=2)
     matplotlib.rc('axes', linewidth=3)
-    ##AXISNAME.xaxis.set_ticks_position('bottom')
-    ##AXISNAME.yaxis.set_ticks_position('left')
-    ##AXISNAME.xaxis.labelpad = 2
+
+def cleanAxis(axisName, ticksOnly=False):
+    axisName.xaxis.set_ticks_position('bottom')
+    axisName.yaxis.set_ticks_position('left')
+    axisName.xaxis.labelpad = 2
+    if not ticksOnly:
+        axisName.spines['top'].set_visible(False)
+        axisName.spines['right'].set_visible(False)
 
 def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, 
                   median=False, figSize = (22,5), noFill=False, mew=1, yMin=-0.05):
@@ -401,7 +471,7 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=0, yMax=10,
     
 
 def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, gridLines=False, yMin=0.5, yMax=2.5, 
-                    legend=True, normalizeToN15=False, subtractRef=None):
+                    legend=True, normalizeToN15=False, subtractRef=None, legendLoc=4):
     """plotMSSpectra3D is a  makes a 3d plot of MS spectra
 
     :param listOfFilesToPlot: a list of the spectra to be plotted (full paths)
@@ -482,17 +552,18 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
     ax.w_yaxis.line.set_linewidth(2)
     ax.w_zaxis.line.set_linewidth(2)
            
-    ax.set_zticks([0, top/3, 2*top/3, top])
+    ax.set_zticks([round(i,1) for i in [0, top/3, 2*top/3, top]])
     ax.set_zlim3d([0, top])
     ax.set_ylim3d(yMin, yMax)
     ax.set_yticks(range(1,yTotal+1))
+    pylab.yticks(range(1,yTotal+1), ['']*yTotal)
 
     ax.set_xlabel("mass")
     ax.set_zlabel("intensity")
 
     ax.view_init(10, -67)
     if legend:
-        pylab.legend()
+        pylab.legend(loc=legendLoc)
     
     return ax
 
