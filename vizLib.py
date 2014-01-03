@@ -6,19 +6,23 @@ import numpy
 import matplotlib
 import brewer2mpl
 
-def getBCs(a,n):
+def getBCs(a,n, name=None):
     if a is 'q':
         t='Qualitative'
-        name='Set1'
+        if name is None:
+            name='Set1'
     elif a is 's':
         t='Sequential'
-        name='Blues'
+        if name is None:
+            name='Blues'
     elif a is 'd':
         t='Diverging'
-        name='RdBu'
+        if name is None:
+            name='RdBu'
     elif a is 'p':
         t='Qualitative'
-        name='Paired'
+        if name is None:
+            name='Paired'
         
     else:
         print 'incorrect color type given, expected "q", "s", "p", or "d"'
@@ -133,7 +137,7 @@ def cleanAxis(axisName, ticksOnly=False):
         axisName.spines['right'].set_visible(False)
 
 def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, 
-                  median=False, figSize = (22,5), noFill=False, mew=1, yMin=-0.05):
+                  median=False, figSize = (22,5), noFill=False, mew=1, yMin=-0.05, highlightMed=False):
     """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
         listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
         Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
@@ -165,9 +169,28 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
         #proteins = sorted(statsDict.keys())
         proteins = qMS.sort_nicely(statsDict.keys())
 
+    if noFill:
+        edgeColor=color
+        color='none'
+    else:
+        edgeColor='black'
+        
     xAxis = range(1,len(proteins)+1)
     fig = pylab.figure(figsize=figSize)
     ax = fig.add_subplot(111)
+    
+
+    mx = []
+    my = []
+    if highlightMed:
+        for x in xAxis:
+            p = proteins[x-1]
+            if p in statsDict.keys():
+                    mx.append(x+offset)
+                    my.append(numpy.median(statsDict[p]))
+    ax.plot(mx, my, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*3)
+    
+    
     xs = []
     ys = []
     for x in xAxis:
@@ -183,10 +206,7 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
 
     pylab.grid(b=True, which='major', color='grey', linestyle='--', axis='y', linewidth=1.5, alpha=0.5)
     pylab.grid(b=True, which='major', color='grey', linestyle='-', axis='x', linewidth=1.5, alpha=0.75)
-    if noFill:
-        ax.plot(xs, ys, 'o', color='none', markeredgecolor=color, mew=mew, markersize=markerSize, label=name)
-    else:
-        ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
+    ax.plot(xs, ys, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize, label=name)
 
     pylab.xticks(xAxis, [item for item in proteins], rotation=45)
     pylab.xlim(1, len(proteins)+1)
@@ -201,7 +221,7 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     ax.set_axisbelow(True)
     return ax
 
-def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color='#377db8', median=False, noFill=False, mew=1):
+def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color='#377db8', median=False, noFill=False, mew=1, highlightMed=False):
     """addStatsDataStructToPlot adds the contents of a stats dictionary to an existing plot. ONLY PROTEINS
         PRESENT IN THE ORIGINAL PLOT WILL BE PLOTTED IN THE NEW PLOT
         The data is in statsDict, the axis to add to is in ax, the name is in in name.
@@ -232,8 +252,25 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
 
     a = ax.get_xmajorticklabels()
     proteins = [t.get_text() for t in a]
+    
+    if noFill:
+        edgeColor=color
+        color='none'
+    else:
+        edgeColor='black'
 
     xAxis = range(1,len(proteins)+1)
+
+    mx=[]
+    my=[]
+    if highlightMed:
+        for x in xAxis:
+            p = proteins[x-1]
+            if p in statsDict.keys():
+                    mx.append(x+offset)
+                    my.append(numpy.median(statsDict[p]))
+    ax.plot(mx, my, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*3)
+
     xs = []
     ys = []
     for x in xAxis:
@@ -247,16 +284,12 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
                     xs.append(x+offset)
                     ys.append(v)
 
-    if noFill:
-        ax.plot(xs, ys, 'o', color='none', markeredgecolor=color, mew=mew, markersize=markerSize, label=name)
-    else:
-        ax.plot(xs, ys, 'o', color=color, markersize=markerSize, label=name)
-
+    ax.plot(xs, ys, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize, label=name)
     ax.set_axisbelow(True)
     return ax
 
 def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, normProtein=None, yMax=1.5, 
-                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05):
+                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05, highlightMed=False):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
@@ -295,10 +328,10 @@ def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, nor
     
     return makePlotWithStatsDictDict(allStats, subunits=subunits, yMax=yMax,
                                      median=median, namesList=namesList, colors=colors, figSize=figSize, markerSize=markerSize,
-                                     noFill=noFill, mew=mew, yMin=yMin)
+                                     noFill=noFill, mew=mew, yMin=yMin, highlightMed=highlightMed)
 
 def makePlotWithStatsDictDict(allStats, subunits=None, yMax=1.5, 
-                         median=False, namesList=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05):
+                         median=False, namesList=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05, highlightMed=False):
     """makePlotWithStatsDictDict is a  helper function that plots massage-style data from a dict of statsDicts
 
     :param allStats: dictionary of stats dictionaries (returned by multiStatsDict)
@@ -340,12 +373,12 @@ def makePlotWithStatsDictDict(allStats, subunits=None, yMax=1.5,
 
     ax = plotStatsDict( allStats[namesList[0][0]], name=namesList[0][1], proteins=subunits, \
                         offset=1.0/offsets, markerSize=markerSize, yMax=yMax, median=median, 
-                        color=colors[0], figSize=figSize, noFill=noFill, mew=mew, yMin=yMin)
+                        color=colors[0], figSize=figSize, noFill=noFill, mew=mew, yMin=yMin, highlightMed=highlightMed)
         
     for i in range(1,len(namesList)):
         ax = addStatsDictToPlot(allStats[namesList[i][0]], ax, name=namesList[i][1], \
                                 offset=(1.0/offsets)*(i+1.25), markerSize=markerSize, median=median, 
-                                color=colors[i], noFill=noFill, mew=mew)
+                                color=colors[i], noFill=noFill, mew=mew, highlightMed=highlightMed)
         ax.set_axisbelow(True)
     return ax
 
@@ -396,10 +429,10 @@ def plotCompData(xdat, ydat, proteins, title=None, xlabel='dat1', ylabel='dat2',
     scatAx.plot(numpy.linspace(0, 10), numpy.linspace(0,10))
     return scatAx
 
-def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=0, yMax=10,
+def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=-0.1, yMax=10,
                        title=None, xLabel=None, yLabel=None, colors=None, 
                        figSize=(10,10), markerSize=10, legend=False,
-                        linestyle=None, xTicks=None, legendLoc='upper left', legendCols=2):
+                        linestyle=None, xTicks=None, legendLoc='upper left', legendCols=2, axes=None):
     """proteinScatterPlot is a  makes a scatter plot out of ydata with a fixed x. Useful for the standard curve stuff or gradients.
 
     :param yDataDict: a dictionary of values to be plotted on the y axis (keys are protein names, values are numpy arrays of values)
@@ -444,8 +477,11 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=0, yMax=10,
         xMax = max(xData)
     if colors is None:
         colors = [pylab.cm.jet(float(i)/float(len(yDataDict))) for i in range(len(yDataDict))]
-    scat = pylab.figure(figsize=figSize)
-    scatAx = scat.add_subplot(111)
+    if axes is None:
+        scat = pylab.figure(figsize=figSize)
+        scatAx = scat.add_subplot(111)
+    else:
+        scatAx=axes
     for i,p in enumerate(qMS.sort_nicely(yDataDict.keys())):
         scatAx.scatter(xData, yDataDict[p], c=colors[i], s=markerSize, label=p)
         if not (linestyle is None):
@@ -454,7 +490,7 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=0, yMax=10,
     scatAx.set_xlabel(xLabel)
     scatAx.set_ylabel(yLabel)
     scatAx.set_xlim([xMin,xMax])
-    scatAx.set_ylim([-0.1,yMax])
+    scatAx.set_ylim([yMin,yMax])
     if xTicks is None:
         scatAx.set_xticks([0,xMax/4,xMax/4*2,xMax/4*3,xMax])
     else:
