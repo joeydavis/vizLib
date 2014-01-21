@@ -73,7 +73,7 @@ def rstyle(ax):
         lg.get_frame().set_alpha(0.5)
         
         
-def setRcs(scale=None, legendScale=None, tickScale=1):
+def setRcs(scale=None, legendScale=None, tickScale=1, axisLineWidth=3):
     """setRcs sets a series of rc params for matplotlib tomake decent looking plots. Also some useful def
     in there to cutomize things.
 
@@ -126,18 +126,24 @@ def setRcs(scale=None, legendScale=None, tickScale=1):
     matplotlib.rc('legend', **legend)
 
     matplotlib.rc('lines', linewidth=2)
-    matplotlib.rc('axes', linewidth=3)
+    matplotlib.rc('axes', linewidth=axisLineWidth)
 
-def cleanAxis(axisName, ticksOnly=False):
+def cleanAxis(axisName, ticksOnly=False, complete=False):
     axisName.xaxis.set_ticks_position('bottom')
     axisName.yaxis.set_ticks_position('left')
     axisName.xaxis.labelpad = 2
     if not ticksOnly:
         axisName.spines['top'].set_visible(False)
         axisName.spines['right'].set_visible(False)
+    if complete:
+        axisName.spines['top'].set_visible(False)
+        axisName.spines['right'].set_visible(False)
+        axisName.spines['bottom'].set_visible(False)
+        axisName.spines['left'].set_visible(False)
+        
 
 def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, 
-                  median=False, figSize = (22,5), noFill=False, mew=1, yMin=-0.05, highlightMed=False):
+                  median=False, figSize = (22,5), noFill=False, mew=1, yMin=-0.05, highlightMed=False, hms=2, hmFilled=True):
     """plotStatsDataStruct plots the contents of a stats dictionary. proteins to be plotted are 
         listed in the non-redundent list, proteins. The data is in statsDict, the name is in in name.
         Decent colors are red (['#ae2221', '#d72c2b', '#e78180']) and blue (['#25557d', '#3170a4', '#5696cc'])
@@ -164,11 +170,15 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     
         
     """
-    
     if proteins is None:
         #proteins = sorted(statsDict.keys())
         proteins = qMS.sort_nicely(statsDict.keys())
 
+    if hmFilled:
+        medColor=color
+    else:
+        medColor='none'
+  
     if noFill:
         edgeColor=color
         color='none'
@@ -188,7 +198,7 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
             if p in statsDict.keys():
                     mx.append(x+offset)
                     my.append(numpy.median(statsDict[p]))
-    ax.plot(mx, my, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*3)
+    ax.plot(mx, my, 'o', color=medColor, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*hms)
     
     
     xs = []
@@ -221,7 +231,7 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     ax.set_axisbelow(True)
     return ax
 
-def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color='#377db8', median=False, noFill=False, mew=1, highlightMed=False):
+def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color='#377db8', median=False, noFill=False, mew=1, highlightMed=False, hms=2, hmFilled=True):
     """addStatsDataStructToPlot adds the contents of a stats dictionary to an existing plot. ONLY PROTEINS
         PRESENT IN THE ORIGINAL PLOT WILL BE PLOTTED IN THE NEW PLOT
         The data is in statsDict, the axis to add to is in ax, the name is in in name.
@@ -252,6 +262,11 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
 
     a = ax.get_xmajorticklabels()
     proteins = [t.get_text() for t in a]
+
+    if hmFilled:
+        medColor=color
+    else:
+        medColor='none'
     
     if noFill:
         edgeColor=color
@@ -269,7 +284,7 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
             if p in statsDict.keys():
                     mx.append(x+offset)
                     my.append(numpy.median(statsDict[p]))
-    ax.plot(mx, my, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*3)
+    ax.plot(mx, my, 'o', color=medColor, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*hms)
 
     xs = []
     ys = []
@@ -289,7 +304,7 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
     return ax
 
 def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, normProtein=None, yMax=1.5, 
-                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05, highlightMed=False):
+                         median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05, highlightMed=False, hms=2, hmFilled=True):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
@@ -328,10 +343,10 @@ def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, nor
     
     return makePlotWithStatsDictDict(allStats, subunits=subunits, yMax=yMax,
                                      median=median, namesList=namesList, colors=colors, figSize=figSize, markerSize=markerSize,
-                                     noFill=noFill, mew=mew, yMin=yMin, highlightMed=highlightMed)
+                                     noFill=noFill, mew=mew, yMin=yMin, highlightMed=highlightMed, hms=hms, hmFilled=hmFilled)
 
 def makePlotWithStatsDictDict(allStats, subunits=None, yMax=1.5, 
-                         median=False, namesList=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05, highlightMed=False):
+                         median=False, namesList=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, mew=1, yMin=-0.05, highlightMed=False, hms=2, hmFilled=True):
     """makePlotWithStatsDictDict is a  helper function that plots massage-style data from a dict of statsDicts
 
     :param allStats: dictionary of stats dictionaries (returned by multiStatsDict)
@@ -373,12 +388,12 @@ def makePlotWithStatsDictDict(allStats, subunits=None, yMax=1.5,
 
     ax = plotStatsDict( allStats[namesList[0][0]], name=namesList[0][1], proteins=subunits, \
                         offset=1.0/offsets, markerSize=markerSize, yMax=yMax, median=median, 
-                        color=colors[0], figSize=figSize, noFill=noFill, mew=mew, yMin=yMin, highlightMed=highlightMed)
+                        color=colors[0], figSize=figSize, noFill=noFill, mew=mew, yMin=yMin, highlightMed=highlightMed, hms=hms, hmFilled=hmFilled)
         
     for i in range(1,len(namesList)):
         ax = addStatsDictToPlot(allStats[namesList[i][0]], ax, name=namesList[i][1], \
                                 offset=(1.0/offsets)*(i+1.25), markerSize=markerSize, median=median, 
-                                color=colors[i], noFill=noFill, mew=mew, highlightMed=highlightMed)
+                                color=colors[i], noFill=noFill, mew=mew, highlightMed=highlightMed, hms=hms, hmFilled=hmFilled)
         ax.set_axisbelow(True)
     return ax
 
@@ -604,7 +619,7 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
     return ax
 
 def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=None, cIndex=None, km=None,
-                nameList=None, scale=None, saveName=None, colorBar=False, figSize=(6,6), topDendro=False):
+                nameList=None, scale=None, saveName=None, colorBar=False, figSize=(6,6), topDendro=False, fig=None, axData=None):
     """drawHeatMap produces a colored heatmap in a new figure window
 
     :param xdat: a data object (must contain fields 'data', 'fractions', 'proteins')
@@ -632,7 +647,8 @@ def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=
         nameList = [i.split('/')[-1].split('_')[-4:-3] for i in xdat['fractions']]
 
     proteins = [i for i in xdat['proteins']]
-    fig = pylab.figure(figsize=figSize)
+    if fig is None:
+        fig = pylab.figure(figsize=figSize)
     if not (name is None):
         fig.suptitle(name)
     ##Draw heatmap
@@ -653,7 +669,7 @@ def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=
     else:
         yStart = 0.05
         yLength = 0.8
-    figAxes = heatMapAxes(data, dims = [xStart, yStart, xLength, yLength], columns=nameList, rows=proteins, protColors=protColors, cIndex=cIndex, fig=fig, colors=colors)
+    figAxes = heatMapAxes(data, dims = [xStart, yStart, xLength, yLength], columns=nameList, rows=proteins, protColors=protColors, cIndex=cIndex, fig=fig, colors=colors, axData=axData)
     ##Draw colorbar
     if colorBar:
         fig.colorbar(figAxes)
@@ -689,7 +705,7 @@ def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=
         
     return fig
 
-def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.autumn, columns=None, rows=None, protColors=None, cIndex=None, fig=None, colorBar=False):
+def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.autumn, columns=None, rows=None, protColors=None, cIndex=None, fig=None, colorBar=False, axData=None):
     """heatMapAxes draws a heatmap
 
     :param data: a datamatrix to draw
@@ -713,7 +729,8 @@ def heatMapAxes(data, dims=[0.1, 0.1, 0.7, 0.7], colors=pylab.cm.autumn, columns
     """
     if fig is None:
         fig = pylab.figure()
-    axData = fig.add_axes(dims)
+    if axData is None:
+        axData = fig.add_axes(dims)
     for i in range(len(columns)):
         axData.text(i, -0.5 , ' '+str(columns[i]), rotation=270, verticalalignment="top", horizontalalignment="center", fontsize=12)
     if protColors == None:
@@ -763,6 +780,34 @@ def mapGroups(groupList, letters):
     i = 0
     for index in changeList:
         toReplace = groupList[index]
-        groupList = listReplace(groupList, toReplace, letters[i])
+        groupList = qMS.listReplace(groupList, toReplace, letters[i])
         i = i+1
     return list(groupList)
+
+def plotPeptideCount(files, labels=None, colors=None, proteins=None, num=['AMP_U'], den=['AMP_U'], legend=True, figSize=(20,10)):
+    
+    if labels is None:
+        labels=files
+    
+    if colors is None:
+        colors = [pylab.cm.jet(float(i)/float(len(files))) for i in range(len(files))]
+    
+    numFiles=len(files)
+    offset = 1.0/(numFiles+1)
+    
+    msd = qMS.multiStatsDict(files, num, den)
+    
+    f = pylab.figure(figsize=figSize)
+    a = f.add_subplot(111)
+    for j in range(0,numFiles):
+        a.bar([i+offset*j for i in range(len(proteins))], [len(msd[files[j]][i]) for i in proteins], align='edge', width=1.0/(numFiles+2), color=colors[j], label=labels[j])
+    a.set_xticks([i+0.4 for i in range(0,len(proteins))])
+    a.set_xticklabels(proteins, size='medium', rotation='90')
+    a.set_ylabel('number of peptides')
+    cleanAxis(a, ticksOnly=True)
+    if legend:
+        a.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=5, mode="expand", borderaxespad=0.)
+    return a
+
+def mm2inches(mm):
+    return mm*0.0393701
