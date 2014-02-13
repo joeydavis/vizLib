@@ -5,6 +5,7 @@ import qMS
 import numpy
 import matplotlib
 import brewer2mpl
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 def getBCs(a,n, name=None):
     if a is 'q':
@@ -522,7 +523,7 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=-0.1, yMax=10,
     
 
 def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, gridLines=False, yMin=0.5, yMax=2.5, 
-                    legend=True, normalizeToN15=False, subtractRef=None, legendLoc=4):
+                    legend=True, normalizeToN15=False, subtractRef=None, legendLoc=4, lw=1.5):
     """plotMSSpectra3D is a  makes a 3d plot of MS spectra
 
     :param listOfFilesToPlot: a list of the spectra to be plotted (full paths)
@@ -552,7 +553,7 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
     if listOfColors==None:
         listOfColors = [pylab.cm.jet(float(i)/float(len(listOfFilesToPlot))) for i in range(len(listOfFilesToPlot))]
     
-    fig = pylab.figure()
+    fig = pylab.figure(figsize=(18,6))
     ax = fig.add_subplot(111, projection='3d')
 
     yTotal = len(listOfFilesToPlot)
@@ -577,7 +578,7 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
             xs = xs[:len(xs)/2]
             ys = ys[:len(ys)/2]
             zs = zs[:len(zs)/2]
-        ax.plot(numpy.array(xs),numpy.array(ys),numpy.array(zs), color=listOfColors[i], lw=1.5, label=listOfNames[i])
+        ax.plot(numpy.array(xs),numpy.array(ys),numpy.array(zs), color=listOfColors[i], lw=lw, label=listOfNames[i])
         top = max([top, float(max(zs))])
 
 
@@ -608,11 +609,12 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
     ax.set_ylim3d(yMin, yMax)
     ax.set_yticks(range(1,yTotal+1))
     pylab.yticks(range(1,yTotal+1), ['']*yTotal)
+    ax.set_xlim3d([636, 648])
 
     ax.set_xlabel("mass")
     ax.set_zlabel("intensity")
 
-    ax.view_init(10, -67)
+    ax.view_init(25, -80)
     if legend:
         pylab.legend(loc=legendLoc)
     
