@@ -499,9 +499,11 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=-0.1, yMax=10,
     else:
         scatAx=axes
     for i,p in enumerate(qMS.sort_nicely(yDataDict.keys())):
-        scatAx.scatter(xData, yDataDict[p], c=colors[i], s=markerSize, label=p)
+        
         if not (linestyle is None):
-            scatAx.plot(xData, yDataDict[p], c=colors[i], markersize=markerSize, linestyle=linestyle)
+            scatAx.plot(xData, yDataDict[p], c=colors[i], linestyle=linestyle, label=p, marker='o', markersize=markerSize)
+        else:
+            scatAx.plot(xData, yDataDict[p], c=colors[i], markersize=markerSize, marker='o', label=p)
     scatAx.set_title(title, multialignment='center')
     scatAx.set_xlabel(xLabel)
     scatAx.set_ylabel(yLabel)
