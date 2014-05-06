@@ -6,6 +6,13 @@ import numpy
 import matplotlib
 import brewer2mpl
 from mpl_toolkits.mplot3d.axes3d import Axes3D
+from IPython.core.display import HTML
+
+def css_styling(path = "/home/jhdavis/scripts/python/iPyNBs/custom.css", half=False):
+    if half:
+        path = "/home/jhdavis/scripts/python/iPyNBs/half.css"
+    styles = open(path, "r").read()
+    return HTML(styles)
 
 def getBCs(a,n, name=None):
     if a is 'q':
@@ -31,6 +38,29 @@ def getBCs(a,n, name=None):
     bmap = brewer2mpl.get_map(name, t, n)
     return bmap.mpl_colors
 
+def smoothListGaussian(data,degree=5):
+    window=degree*2
+    weight=numpy.array([1.0]*window)
+    weightGauss=[]
+    dataBuff = []
+    for i in range(degree):
+        dataBuff.append(data[0])
+    for i in data:
+        dataBuff.append(i)
+    for i in range(degree):
+        dataBuff.append(data[-1])
+    data = dataBuff
+    for i in range(window):
+        i=i-degree+1
+        frac=i/float(window)
+        gauss=1/(numpy.exp((4*(frac))**2))
+        weightGauss.append(gauss)
+    weight=numpy.array(weightGauss)*weight
+    smoothed=[0.0]*(len(data)-window)
+    for i in range(len(smoothed)):
+        smoothed[i]=sum(numpy.array(data[i:i+window])*weight)/sum(weight)
+    
+    return smoothed
 
 def rstyle(ax): 
     """Styles an axes to appear like ggplot2
@@ -129,7 +159,7 @@ def setRcs(scale=None, legendScale=None, tickScale=1, axisLineWidth=3):
     matplotlib.rc('lines', linewidth=2)
     matplotlib.rc('axes', linewidth=axisLineWidth)
 
-def cleanAxis(axisName, ticksOnly=False, complete=False):
+def cleanAxis(axisName, ticksOnly=False, complete=False, xTickNumber=0, yTickNumber=0):
     axisName.xaxis.set_ticks_position('bottom')
     axisName.yaxis.set_ticks_position('left')
     axisName.xaxis.labelpad = 2
@@ -141,7 +171,21 @@ def cleanAxis(axisName, ticksOnly=False, complete=False):
         axisName.spines['right'].set_visible(False)
         axisName.spines['bottom'].set_visible(False)
         axisName.spines['left'].set_visible(False)
-        
+    return axisName
+    
+def tickNum(a, xAxis=3, yAxis=3):
+    xlims = [x for x in a.axis()[0:2]]
+    xRange = xlims[1] - xlims[0]
+    ti = xRange/(xAxis-1)
+    a.set_xticks([round(x, 1) for x in numpy.arange(xlims[0], xlims[1]+1, ti)])
+    a.set_xlim([round(x, 1) for x in xlims])
+    
+    ylims = [i for i in a.axis()[2:]]
+    yRange = ylims[1] - ylims[0]
+    ti = yRange/(yAxis-1)
+    a.set_yticks([round(i, 1) for i in numpy.arange(ylims[0], ylims[1]+1, ti)])
+    a.set_ylim([round(i, 1) for i in ylims])
+
 
 def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, color='#e31a1c', yMax=1.5, alpha=1.0,
                   median=False, figSize = (22,5), noFill=False, mew=1, yMin=-0.05, highlightMed=False, hms=2, hmFilled=True,
