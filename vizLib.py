@@ -352,7 +352,7 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
     ax.set_axisbelow(True)
     return ax
 
-def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, normProtein=None, yMax=1.5, title=None,
+def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, normProtein=None, yMax=1.5, title=None, legendCols=4,
                          median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, legend=False,
                         mew=1, yMin=-0.05, highlightMed=False, hms=2, hmFilled=True, yAxis=None, alpha=1.0):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
@@ -391,7 +391,7 @@ def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, nor
     namesList = [(isoFileList[i], names[i]) for i in range(len(isoFileList))]
     allStats = qMS.multiStatsDict(isoFileList, numerator, denominator, normalization=1.0, offset=0.0, normProtein=normProtein)
     
-    return makePlotWithStatsDictDict(allStats, subunits=subunits, yMax=yMax, title=title, legend=legend, yAxis=yAxis,
+    return makePlotWithStatsDictDict(allStats, subunits=subunits, yMax=yMax, title=title, legend=legend, legendCols=legendCols, yAxis=yAxis,
                                      median=median, namesList=namesList, colors=colors, figSize=figSize, markerSize=markerSize,
                                      noFill=noFill, mew=mew, yMin=yMin, highlightMed=highlightMed, hms=hms, hmFilled=hmFilled, alpha=alpha)
 
