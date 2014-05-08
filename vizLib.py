@@ -432,9 +432,9 @@ def makePlotWithStatsDictDict(allStats, subunits=None, yMax=1.5, title=None, leg
         namesList = [(k, k) for k in allStats.keys()]
     
     if colors is None:
-        colors = [pylab.cm.jet(float(i)/float(len(allStats))) for i in range(len(allStats))]
+        colors = [pylab.cm.jet(float(i)/float(len(allStats))) for i in range(len(namesList))]
     
-    offsets = float(len(allStats)+1)
+    offsets = float(len(namesList)+1)
     if markerSize is None:
         markerSize = (20.0/offsets)+4
 
