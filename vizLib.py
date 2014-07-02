@@ -5,7 +5,7 @@ import qMS
 import numpy
 import matplotlib
 import brewer2mpl
-from mpl_toolkits.mplot3d.axes3d import Axes3D
+#from mpl_toolkits.mplot3d.axes3d import Axes3D
 from IPython.core.display import HTML
 
 def css_styling(path = "/home/jhdavis/scripts/python/iPyNBs/custom.css", half=False):
@@ -31,7 +31,6 @@ def getBCs(a,n, name=None):
         t='Qualitative'
         if name is None:
             name='Paired'
-        
     else:
         print 'incorrect color type given, expected "q", "s", "p", or "d"'
         return 'ERROR'
@@ -159,7 +158,18 @@ def setRcs(scale=None, legendScale=None, tickScale=1, axisLineWidth=3):
     matplotlib.rc('lines', linewidth=2)
     matplotlib.rc('axes', linewidth=axisLineWidth)
 
-def cleanAxis(axisName, ticksOnly=False, complete=False, xTickNumber=0, yTickNumber=0):
+def cleanAxis(axisName, ticksOnly=False, complete=False):
+    """cleanAxis clears the extra ticks and borders on the axis
+    
+    :param axisName: a pylab axis to clean
+    :type axisName: pylab axis
+    :param ticksOnly: boolean if you want to just remove the ticks from the top/right (but leave the border)
+    :type ticksOnly: boolean (defaults to False)
+    :param complete: boolean if you want to get rid of all fo the borders
+    :type complete: boolean (defaults to False)
+    
+    :returns:  the modified pylab axis.
+    """
     axisName.xaxis.set_ticks_position('bottom')
     axisName.yaxis.set_ticks_position('left')
     axisName.xaxis.labelpad = 2
@@ -174,6 +184,17 @@ def cleanAxis(axisName, ticksOnly=False, complete=False, xTickNumber=0, yTickNum
     return axisName
     
 def tickNum(a, xAxis=3, yAxis=3):
+    """tickNum sets the number of ticks on a given axis
+    
+    :param a: a pylab axis to change the tick numbers on
+    :type a: pylab axis
+    :param xAxis: the number of ticks on the x axis (defaults to 3)
+    :type xAxis: int
+    :param yAxis: the number of ticks on the y axis (defaults to 3)
+    :type yAxis: int
+    
+    :returns:  the modified pylab axis.
+    """
     xlims = [x for x in a.axis()[0:2]]
     xRange = xlims[1] - xlims[0]
     ti = xRange/(xAxis-1)
@@ -354,7 +375,7 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
 
 def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, normProtein=None, yMax=1.5, title=None, legendCols=4,
                          median=False, names=None, colors=None, figSize=(22,5), markerSize=None, noFill=False, legend=False,
-                        mew=1, yMin=-0.05, highlightMed=False, hms=2, hmFilled=True, yAxis=None, alpha=1.0):
+                        mew=1, yMin=-0.05, highlightMed=False, hms=2, hmFilled=True, yAxis=None, alpha=1.0, adjProt=None):
     """makePlotWithFileList is a  helper function that plots massage-style data from a list of files
 
     :param isoFileList: a list of the files to be ploted (shoudl be full path to _iso.csv files)
@@ -389,7 +410,7 @@ def makePlotWithFileList(isoFileList, numerator, denominator, subunits=None, nor
         names = isoFileList
         
     namesList = [(isoFileList[i], names[i]) for i in range(len(isoFileList))]
-    allStats = qMS.multiStatsDict(isoFileList, numerator, denominator, normalization=1.0, offset=0.0, normProtein=normProtein)
+    allStats = qMS.multiStatsDict(isoFileList, numerator, denominator, normalization=1.0, offset=0.0, normProtein=normProtein, noProcess=True, adjProt=adjProt)
     
     return makePlotWithStatsDictDict(allStats, subunits=subunits, yMax=yMax, title=title, legend=legend, legendCols=legendCols, yAxis=yAxis,
                                      median=median, namesList=namesList, colors=colors, figSize=figSize, markerSize=markerSize,
@@ -509,7 +530,7 @@ def plotCompData(xdat, ydat, proteins, title=None, xlabel='dat1', ylabel='dat2',
 
 def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=-0.1, yMax=10,
                        title=None, xLabel=None, yLabel=None, colors=None, 
-                       figSize=(10,10), markerSize=10, legend=False,
+                       figSize=(10,10), markerSize=10, legend=False, alpha=1.0, marker='o',
                         linestyle=None, xTicks=None, legendLoc='upper left', legendCols=2, axes=None):
     """proteinScatterPlot is a  makes a scatter plot out of ydata with a fixed x. Useful for the standard curve stuff or gradients.
 
@@ -563,9 +584,9 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=-0.1, yMax=10,
     for i,p in enumerate(qMS.sort_nicely(yDataDict.keys())):
         
         if not (linestyle is None):
-            scatAx.plot(xData, yDataDict[p], c=colors[i], linestyle=linestyle, label=p, marker='o', markersize=markerSize)
+            scatAx.plot(xData, yDataDict[p], c=colors[i], linestyle=linestyle, label=p, marker=marker, markersize=markerSize, alpha=alpha)
         else:
-            scatAx.plot(xData, yDataDict[p], c=colors[i], markersize=markerSize, marker='o', label=p)
+            scatAx.plot(xData, yDataDict[p], c=colors[i], markersize=markerSize, marker=marker, label=p, alpha=alpha)
     scatAx.set_title(title, multialignment='center')
     scatAx.set_xlabel(xLabel)
     scatAx.set_ylabel(yLabel)
@@ -587,7 +608,8 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=-0.1, yMax=10,
     
 
 def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, gridLines=False, yMin=0.5, yMax=2.5, 
-                    legend=True, normalizeToN15=False, subtractRef=None, legendLoc=4, lw=1.5):
+                    legend=True, normalizeToN15=False, subtractRef=None, legendLoc=4, lw=1.5, xMin=0, xMax=2000,
+                    figsize=(10,10), tLeft=0, tRight=-1, fixedOffset=False, noTicks=False, xlabel='mass', zlabel='intensity', a14=1.0):
     """plotMSSpectra3D is a  makes a 3d plot of MS spectra
 
     :param listOfFilesToPlot: a list of the spectra to be plotted (full paths)
@@ -617,7 +639,7 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
     if listOfColors==None:
         listOfColors = [pylab.cm.jet(float(i)/float(len(listOfFilesToPlot))) for i in range(len(listOfFilesToPlot))]
     
-    fig = pylab.figure(figsize=(18,6))
+    fig = pylab.figure(figsize=figsize)
     ax = fig.add_subplot(111, projection='3d')
 
     yTotal = len(listOfFilesToPlot)
@@ -625,11 +647,17 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
 
     if not (subtractRef is None):
         [bhah, zsRef, blah] = qMS.readMSSpectraFile(listOfFilesToPlot[subtractRef])
+        #zsRef = list(numpy.array(zsRef)-fixedOffset
         zNorm = max(zsRef[len(zsRef)/2:])
         zsRef = numpy.array(zsRef)/zNorm
     
     for i,f in enumerate(listOfFilesToPlot):
         [xs, zs, name] = qMS.readMSSpectraFile(f)
+        if fixedOffset:
+            off = zs[len(zs)/2]
+            print off
+            #zs = list(numpy.array(zs)-zs[len(zs)/2])
+            zs = list(numpy.array(zs)-off)
         ys = [yTotal-i]*len(xs)
         if normalizeToN15:
             zNorm = max(zs[len(zs)/2:])
@@ -637,12 +665,13 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
         if not (subtractRef is None):
             zNorm = max(zs[len(zs)/2:])
             zs = numpy.array(zs)/zNorm
-            zs = zs-zsRef
+            zs[:len(zsRef)/2] = zs[:len(zs)/2]-zsRef[:len(zsRef)/2]
             zs = zs*zNorm
-            xs = xs[:len(xs)/2]
-            ys = ys[:len(ys)/2]
-            zs = zs[:len(zs)/2]
-        ax.plot(numpy.array(xs),numpy.array(ys),numpy.array(zs), color=listOfColors[i], lw=lw, label=listOfNames[i])
+            #xs = xs[:len(xs)/2]
+            #ys = ys[:len(ys)/2]
+            #zs = zs[:len(zs)/2]
+        zs[:len(zs)/2] = numpy.array(zs[:len(zs)/2])*a14
+        ax.plot(numpy.array(xs[tLeft:tRight]),numpy.array(ys[tLeft:tRight]),numpy.array(zs[tLeft:tRight]), color=listOfColors[i], lw=lw, label=listOfNames[i])
         top = max([top, float(max(zs))])
 
 
@@ -651,41 +680,47 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
     ax.w_zaxis.pane.set_visible(False)
 
     if gridLines:        
-        ax.w_xaxis.gridlines.set_linewidth(2)
-        ax.w_yaxis.gridlines.set_linewidth(2)
-        ax.w_zaxis.gridlines.set_linewidth(2)
+        ax.w_xaxis.gridlines.set_linewidth(1)
+        ax.w_yaxis.gridlines.set_linewidth(1)
+        ax.w_zaxis.gridlines.set_linewidth(1)
     
     else:
         ax.w_xaxis.gridlines.set_visible(False)
         ax.w_yaxis.gridlines.set_visible(False)
         ax.w_zaxis.gridlines.set_visible(False)
 
-    [i.set_linewidth(2) for i in ax.w_xaxis.get_ticklines()]
-    [i.set_linewidth(2) for i in ax.w_yaxis.get_ticklines()]
-    [i.set_linewidth(2) for i in ax.w_zaxis.get_ticklines()]
+    [i.set_linewidth(1) for i in ax.w_xaxis.get_ticklines()]
+    [i.set_linewidth(1) for i in ax.w_yaxis.get_ticklines()]
+    [i.set_linewidth(1) for i in ax.w_zaxis.get_ticklines()]
 
-    ax.w_xaxis.line.set_linewidth(2)
-    ax.w_yaxis.line.set_linewidth(2)
-    ax.w_zaxis.line.set_linewidth(2)
-           
+    ax.w_xaxis.line.set_linewidth(1)
+    ax.w_yaxis.line.set_linewidth(1)
+    ax.w_zaxis.line.set_linewidth(1)
+               
     ax.set_zticks([round(i,1) for i in [0, top/3, 2*top/3, top]])
     ax.set_zlim3d([0, top])
     ax.set_ylim3d(yMin, yMax)
     ax.set_yticks(range(1,yTotal+1))
     pylab.yticks(range(1,yTotal+1), ['']*yTotal)
-    ax.set_xlim3d([636, 648])
+    ax.set_xlim3d([xMin, xMax])
+    
+    if noTicks:
+        ax.set_zticks([])
+        ax.set_xticks([])
+        ax.set_yticks([])
 
-    ax.set_xlabel("mass")
-    ax.set_zlabel("intensity")
+    ax.set_xlabel(xlabel)
+    ax.set_zlabel(zlabel)
 
-    ax.view_init(25, -80)
+    ax.view_init(15, -60)
     if legend:
         pylab.legend(loc=legendLoc)
     
+    pylab.tight_layout()
     return ax
 
-def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=None, cIndex=None, km=None,
-                nameList=None, scale=None, saveName=None, colorBar=False, figSize=(6,6), topDendro=False, fig=None, axData=None):
+def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=None, cIndex=None, km=None, 
+                nameDict={}, scale=None, saveName=None, colorBar=False, figSize=(6,6), topDendro=False, fig=None, axData=None):
     """drawHeatMap produces a colored heatmap in a new figure window
 
     :param xdat: a data object (must contain fields 'data', 'fractions', 'proteins')
@@ -709,8 +744,10 @@ def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=
     """
 
     data = xdat['data']
-    if nameList is None:
-        nameList = [i.split('/')[-1].split('_')[-4:-3] for i in xdat['fractions']]
+    if nameDict is None:
+        nameList = [i for i in xdat['fractions']]
+    else:
+        nameList = [nameDict[i] for i in xdat['fractions']]
 
     proteins = [i for i in xdat['proteins']]
     if fig is None:
@@ -759,6 +796,7 @@ def drawHeatMap(xdat, name=None, colors=pylab.cm.Reds, dendro=False, protColors=
             big = 0-small
         else:
             small = 0-big
+        offset=0.0
         ax3Data = fig.add_axes([xStart, yLength+offset, xLength-0.1, 0.1])
         ax3Data.matshow(km, aspect='auto', origin='lower', cmap=colors, vmin=small, vmax=big)
         for i in range(len(km)):
