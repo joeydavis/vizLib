@@ -7,6 +7,7 @@ import matplotlib
 import brewer2mpl
 #from mpl_toolkits.mplot3d.axes3d import Axes3D
 from IPython.core.display import HTML
+from mpl_toolkits.mplot3d import Axes3D
 
 def css_styling(path = "/home/jhdavis/scripts/python/iPyNBs/custom.css", half=False):
     if half:
@@ -258,17 +259,6 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
     fig = pylab.figure(figsize=figSize)
     ax = fig.add_subplot(111)
 
-    mx = []
-    my = []
-    if highlightMed:
-        for x in xAxis:
-            p = proteins[x-1]
-            if p in statsDict.keys():
-                    mx.append(x+offset)
-                    my.append(numpy.median(statsDict[p]))
-    ax.plot(mx, my, 'o', color=medColor, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*hms)
-    
-    
     xs = []
     ys = []
     for x in xAxis:
@@ -284,7 +274,18 @@ def plotStatsDict(statsDict, name='', proteins=None, offset=0.0, markerSize=12, 
 
     pylab.grid(b=True, which='major', color='grey', linestyle='--', axis='y', linewidth=1.5, alpha=0.5)
     pylab.grid(b=True, which='major', color='grey', linestyle='-', axis='x', linewidth=1.5, alpha=0.75)
-    ax.plot(xs, ys, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize, label=name, alpha=alpha)
+    ax.plot(xs, ys, 'o', mfc=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize, label=name, alpha=alpha)
+
+    if highlightMed:
+        mx = []
+        my = []
+        for x in xAxis:
+            p = proteins[x-1]
+            if p in statsDict.keys():
+                    mx.append(x+offset)
+                    my.append(numpy.median(statsDict[p]))
+        ax.plot(mx, my, '_', color='black', markeredgecolor='black', mew=2, markersize=markerSize*hms)
+
 
     pylab.xticks(xAxis, xTickLabels, rotation=45)
     pylab.xlim(1, len(proteins)+1)
@@ -346,16 +347,6 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
 
     xAxis = range(1,len(proteins)+1)
 
-    mx=[]
-    my=[]
-    if highlightMed:
-        for x in xAxis:
-            p = proteins[x-1]
-            if p in statsDict.keys():
-                    mx.append(x+offset)
-                    my.append(numpy.median(statsDict[p]))
-        ax.plot(mx, my, 'o', color=medColor, markeredgecolor=edgeColor, mew=mew, markersize=markerSize*hms)
-
     xs = []
     ys = []
     for x in xAxis:
@@ -369,7 +360,18 @@ def addStatsDictToPlot(statsDict, ax, name='', offset=0.0, markerSize=12, color=
                     xs.append(x+offset)
                     ys.append(v)
 
-    ax.plot(xs, ys, 'o', color=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize, label=name, alpha=alpha)
+    ax.plot(xs, ys, 'o', mfc=color, markeredgecolor=edgeColor, mew=mew, markersize=markerSize, label=name, alpha=alpha)
+    
+    if highlightMed:
+        mx=[]
+        my=[]
+        for x in xAxis:
+            p = proteins[x-1]
+            if p in statsDict.keys():
+                    mx.append(x+offset)
+                    my.append(numpy.median(statsDict[p]))
+        ax.plot(mx, my, '_', color='black', markeredgecolor='black', mew=2, markersize=markerSize*hms)
+
     ax.set_axisbelow(True)
     return ax
 
@@ -607,8 +609,8 @@ def proteinScatterPlot(yDataDict, xData, xMin=0, xMax=None, yMin=-0.1, yMax=10,
 
     
 
-def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, gridLines=False, yMin=0.5, yMax=2.5, 
-                    legend=True, normalizeToN15=False, subtractRef=None, legendLoc=4, lw=1.5, xMin=0, xMax=2000,
+def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, gridLines=False, yMin=0.5, yMax=2.5, yScale = 1.0,
+                    legend=True, normalizeToN15=False, subtractRef=None, legendLoc=4, lw=1.5, xMin=0, xMax=2000, scaleP=False, scaleI=0, scaleVal=1.0,
                     figsize=(10,10), tLeft=0, tRight=-1, fixedOffset=False, noTicks=False, xlabel='mass', zlabel='intensity', a14=1.0):
     """plotMSSpectra3D is a  makes a 3d plot of MS spectra
 
@@ -659,6 +661,7 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
             #zs = list(numpy.array(zs)-zs[len(zs)/2])
             zs = list(numpy.array(zs)-off)
         ys = [yTotal-i]*len(xs)
+        ys = numpy.array(ys)*yScale
         if normalizeToN15:
             zNorm = max(zs[len(zs)/2:])
             zs = numpy.array(zs)/zNorm
@@ -671,6 +674,8 @@ def plotMSSpectra3D(listOfFilesToPlot, listOfNames=None, listOfColors=None, grid
             #ys = ys[:len(ys)/2]
             #zs = zs[:len(zs)/2]
         zs[:len(zs)/2] = numpy.array(zs[:len(zs)/2])*a14
+        if (scaleP is True) and (i==scaleI):
+            zs = numpy.array(zs)*scaleVal
         ax.plot(numpy.array(xs[tLeft:tRight]),numpy.array(ys[tLeft:tRight]),numpy.array(zs[tLeft:tRight]), color=listOfColors[i], lw=lw, label=listOfNames[i])
         top = max([top, float(max(zs))])
 
