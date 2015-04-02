@@ -5,9 +5,150 @@ import qMS
 import numpy
 import matplotlib
 import brewer2mpl
+import mrmTools
 #from mpl_toolkits.mplot3d.axes3d import Axes3D
 from IPython.core.display import HTML
 from mpl_toolkits.mplot3d import Axes3D
+
+def plotMRMScatterPlot(df, samples=None, labelHash=None, yAxisLabel=None, proteins=None, alpha=1.0, legend=True, legendCols=5, median=True,
+                       grid=True, yAxis=None, num=['light '], den=['heavy '], yTicks=4, sampleLocations=None, sampleField='File Name', ax=None,
+                       medianMarkerInc=1.25, colors=None, figSize=(10,10), markersize=10, fitLine=False, fitR2=False, medianColor='black',
+                       yMin=0, yMax=10, xMin=None, xMax=None, title=None, zOrder=None, medianOnly=None):
+    df.loc[:,'currentCalc'] = mrmTools.calcValue(df, num, den)
+    if samples is None:
+        samples = qMS.sort_nicely(list(df[sampleField].unique()))
+    if proteins is None:
+        proteins = qMS.sort_nicely(list(df['Protein'].unique()))
+    if colors is None:
+        colors = pylab.cm.jet([float(i)/float(len(proteins)) for i in range(len(proteins))])
+    if yAxis is None:
+        interval = (yMax*1.0-yMin)/(yTicks+1.0)
+        yAxis = [yMin+i*interval for i in range(0,yTicks+2)]
+    if labelHash is None:
+        labelHash = {i:i for i in proteins}
+    if sampleLocations is None:
+        sampleLocations = {samples[i]:i for i in range(len(samples))}
+    if xMin is None:
+        xMin = min(sampleLocations.values())
+    if xMax is None:
+        xMax = max(sampleLocations.values())
+    if zOrder is None:
+        zOrder = [i*2+1 for i in range(len(proteins))]
+    if medianOnly is None:
+        medianOnly = [False]*len(proteins)
+
+    if ax is None:
+        f = pylab.figure(figsize=figSize)
+        ax = f.add_subplot(111)
+    for i, p in enumerate(proteins):
+        protDF = df[df['Protein'] == p]
+        ax.plot(numpy.NaN, numpy.NaN, marker = 'o', color=colors[i], label=labelHash[p], markersize=markersize*1.5)
+        ysFit = []
+        xsFit = []
+        for j, s in enumerate(samples):
+            if not medianOnly[i]:
+                ax.plot([float(sampleLocations[s])]*(len(protDF[protDF[sampleField] == s])),
+                         protDF[protDF[sampleField]==s]['currentCalc'], 
+                        'o', alpha=alpha, color=colors[i], markersize=markersize, zorder=zOrder[i])
+            if median:
+                marker='_'
+                mew=markersize/3
+                zorder=100
+                if medianColor is None:
+                    medianColor = colors[i]
+                if medianOnly[i]:
+                    marker='o'
+                    medianColor=colors[i]
+                    mew = 0
+                    zorder=zOrder[i]
+                ax.plot(sampleLocations[s], protDF[protDF[sampleField]==s]['currentCalc'].median(), marker=marker, 
+                        mew=mew, color=medianColor, markersize=markersize*medianMarkerInc, zorder=zorder)
+            ysFit.append(protDF[protDF[sampleField]==s]['currentCalc'].median())
+            xsFit.append(sampleLocations[s])
+        if fitLine:
+            pFit = numpy.polyfit(xsFit, ysFit, 1)
+            xsFit.append(xMin)
+            xsFit.append(xMax)
+            ax.plot(numpy.array(xsFit), pFit[0]*numpy.array(xsFit)+pFit[1], '-', color=colors[i], zorder=zOrder[i]-1)
+    if legend:
+        ax.legend(ncol=legendCols, loc='upper center', bbox_to_anchor=(0.5, 1.0),
+                fancybox=True, shadow=False)
+    ax.set_ylim(yMin, yMax)
+    ax.set_yticks(yAxis)
+    pylab.xticks(sampleLocations.values())
+    ax.set_xlim(xMin, xMax)
+    if grid:
+        pylab.grid()
+        cleanAxis(ax, ticksOnly=True)
+    if not title is None:
+        ax.set_title(title)
+    if not yAxisLabel is None:
+        ax.set_ylabel(yAxisLabel)
+    return ax
+
+def plotMRMCsv(df, samples = None, sampleField='File Name', colors=None, labelHash=None, yAxisLabel=None, legendLoc = 'upper center',
+               num = ['light '], den = ['heavy '], proteins = None, alpha=1.0, markersize=10, title=None, legendBBox = (0.5, 1.0),
+               median = True, medianMarker = '-', legend=True, legendCols=5, normProtein=None, medianMarkerInc = 2.5, normSample=None,
+               yAxis=None, yMin = 0.0, yMax = 10.0, yTicks=2, figSize=(15,5), grid=False, scaleProt=None):
+    df.loc[:,'currentCalc'] = mrmTools.calcValue(df, num, den)
+    if scaleProt is None:
+        scaleProt = {}
+    if samples is None:
+        samples = qMS.sort_nicely(list(df[sampleField].unique()))
+    if colors is None:
+        colors = pylab.cm.jet([float(i)/float(len(samples)) for i in range(len(samples))])
+    if proteins is None:
+        proteins = qMS.sort_nicely(list(df['Protein'].unique()))
+    if yAxis is None:
+        interval = (yMax*1.0-yMin)/(yTicks+1.0)
+        yAxis = [yMin+i*interval for i in range(0,yTicks+2)]
+    if labelHash is None:
+        labelHash = {i:i for i in samples}
+    for i in proteins:
+        if i not in scaleProt.keys():
+            scaleProt[i] = 1.0
+    if not normSample is None:
+        sampDF = df[df[sampleField]==normSample]
+        normValue = 1.0
+        if not normProtein is None:
+            normValue = sampDF[sampDF['Protein']==normProtein]['currentCalc'].median()        
+        for p in proteins:
+            scaleProt[p] = (sampDF[sampDF['Protein']==p]['currentCalc']/normValue).median()
+    xOffset = 1.0/(len(samples)+1)
+    f = pylab.figure(figsize=figSize)
+    ax = f.add_subplot(111)
+    for i, s in enumerate(samples):
+        sampDF = df[df[sampleField]==s]
+        ax.plot(numpy.NaN, numpy.NaN, marker = 'o', color=colors[i], label=labelHash[s], markersize=markersize*1.5)
+        if not normProtein is None:
+            normValue = sampDF[sampDF['Protein']==normProtein]['currentCalc'].median()
+        else:
+            normValue = 1.0
+        for j, p in enumerate(proteins):
+            ax.plot([float(j+(i+1)*xOffset)]*len(sampDF[sampDF['Protein']==p]),
+                    sampDF[sampDF['Protein']==p]['currentCalc']/(normValue*scaleProt[p]), 
+                    'o', alpha=alpha, color=colors[i], markersize=markersize)
+            if median:
+                try:
+                    ax.plot(float(j+(i+1)*xOffset), sampDF[sampDF['Protein']==p]['currentCalc'].median()/(normValue*scaleProt[p]), marker='_', 
+                            mew=markersize/3, color='black', markersize=markersize*medianMarkerInc)
+                except:
+                    'print error'
+    if legend:
+        ax.legend(ncol=legendCols, loc=legendLoc, bbox_to_anchor=legendBBox,
+                fancybox=True, shadow=False)
+    ax.set_ylim(yMin, yMax)
+    ax.set_yticks(yAxis)
+    pylab.xticks(range(len(proteins)), proteins, rotation=45)
+    pylab.xlim(0, len(proteins))
+    if grid:
+        pylab.grid()
+        cleanAxis(ax, ticksOnly=True)
+    if not title is None:
+        ax.set_title(title)
+    if not yAxisLabel is None:
+        ax.set_ylabel(yAxisLabel)
+    return ax
 
 def css_styling(path = "/home/jhdavis/scripts/python/iPyNBs/custom.css", half=False):
     if half:
@@ -147,6 +288,7 @@ def setRcs(scale=None, legendScale=None, tickScale=1, axisLineWidth=3):
 
     legend = {'fancybox' : True,
               'numpoints' : 1,
+              'scatterpoints' : 1,
               'fontsize' : legendScale,
               'borderaxespad' : 1}
 
