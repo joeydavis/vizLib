@@ -150,9 +150,9 @@ def plotMRMCsv(df, samples = None, sampleField='File Name', colors=None, labelHa
         ax.set_ylabel(yAxisLabel)
     return ax
 
-def css_styling(path = "/home/jhdavis/scripts/python/iPyNBs/custom.css", half=False):
+def css_styling(path = "/home/jhdavis/scripts/iPyNBs/custom.css", half=False):
     if half:
-        path = "/home/jhdavis/scripts/python/iPyNBs/half.css"
+        path = "/home/jhdavis/scripts/iPyNBs/half.css"
     styles = open(path, "r").read()
     return HTML(styles)
 
