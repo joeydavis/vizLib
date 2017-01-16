@@ -13,12 +13,12 @@ from mpl_toolkits.mplot3d import Axes3D
 def plotMRMScatterPlot(df, samples=None, labelHash=None, yAxisLabel=None, proteins=None, alpha=1.0, legend=True, legendCols=5, median=True,
                        grid=True, yAxis=None, num=['light '], den=['heavy '], yTicks=4, sampleLocations=None, sampleField='File Name', ax=None,
                        medianMarkerInc=1.25, colors=None, figSize=(10,10), markersize=10, fitLine=False, fitR2=False, medianColor='black',
-                       yMin=0, yMax=10, xMin=None, xMax=None, title=None, zOrder=None, medianOnly=None):
+                       yMin=0, yMax=10, xMin=None, xMax=None, title=None, zOrder=None, medianOnly=None, proteinNameHeader = 'Protein Name'):
     df.loc[:,'currentCalc'] = mrmTools.calcValue(df, num, den)
     if samples is None:
         samples = qMS.sort_nicely(list(df[sampleField].unique()))
     if proteins is None:
-        proteins = qMS.sort_nicely(list(df['Protein'].unique()))
+        proteins = qMS.sort_nicely(list(df[proteinNameHeader].unique()))
     if colors is None:
         colors = pylab.cm.jet([float(i)/float(len(proteins)) for i in range(len(proteins))])
     if yAxis is None:
@@ -41,7 +41,7 @@ def plotMRMScatterPlot(df, samples=None, labelHash=None, yAxisLabel=None, protei
         f = pylab.figure(figsize=figSize)
         ax = f.add_subplot(111)
     for i, p in enumerate(proteins):
-        protDF = df[df['Protein'] == p]
+        protDF = df[df[proteinNameHeader] == p]
         ax.plot(numpy.NaN, numpy.NaN, marker = 'o', color=colors[i], label=labelHash[p], markersize=markersize*1.5)
         ysFit = []
         xsFit = []
@@ -86,11 +86,12 @@ def plotMRMScatterPlot(df, samples=None, labelHash=None, yAxisLabel=None, protei
         ax.set_ylabel(yAxisLabel)
     return ax
 
-def plotMRMCsv(df, samples = None, sampleField='File Name', colors=None, labelHash=None, yAxisLabel=None, legendLoc = 'upper center',
-               num = ['light '], den = ['heavy '], proteins = None, alpha=1.0, markersize=10, title=None, legendBBox = (0.5, 1.0),
+def plotMRMCsv(df, samples = None, sampleField='File Name', colors=None, labelHash=None, yAxisLabel=None, legendLoc = 'upper center', areaField = 'Area',
+               num = ['light '], den = ['heavy '], proteins = None, alpha=1.0, markersize=10, title=None, legendBBox = (0.5, 1.0), proteinField = 'Protein Name',
                median = True, medianMarker = '-', legend=True, legendCols=5, normProtein=None, medianMarkerInc = 2.5, normSample=None,
-               yAxis=None, yMin = 0.0, yMax = 10.0, yTicks=2, figSize=(15,5), grid=False, scaleProt=None):
-    df.loc[:,'currentCalc'] = mrmTools.calcValue(df, num, den)
+               yAxis=None, yMin = 0.0, yMax = 10.0, yTicks=2, figSize=(15,5), grid=False, scaleProt=None, markeredgewidth=1.0):
+    df.loc[:,'currentCalc'] = mrmTools.calcValue(df, num, den, field=areaField)
+    #print 'running code'
     if scaleProt is None:
         scaleProt = {}
     if samples is None:
@@ -98,7 +99,7 @@ def plotMRMCsv(df, samples = None, sampleField='File Name', colors=None, labelHa
     if colors is None:
         colors = pylab.cm.jet([float(i)/float(len(samples)) for i in range(len(samples))])
     if proteins is None:
-        proteins = qMS.sort_nicely(list(df['Protein'].unique()))
+        proteins = qMS.sort_nicely(list(df[proteinField].unique()))
     if yAxis is None:
         interval = (yMax*1.0-yMin)/(yTicks+1.0)
         yAxis = [yMin+i*interval for i in range(0,yTicks+2)]
@@ -111,29 +112,30 @@ def plotMRMCsv(df, samples = None, sampleField='File Name', colors=None, labelHa
         sampDF = df[df[sampleField]==normSample]
         normValue = 1.0
         if not normProtein is None:
-            normValue = sampDF[sampDF['Protein']==normProtein]['currentCalc'].median()        
+            normValue = sampDF[sampDF[proteinField]==normProtein]['currentCalc'].median()        
         for p in proteins:
-            scaleProt[p] = (sampDF[sampDF['Protein']==p]['currentCalc']/normValue).median()
+            scaleProt[p] = (sampDF[sampDF[proteinField]==p]['currentCalc']/normValue).median()
     xOffset = 1.0/(len(samples)+1)
     f = pylab.figure(figsize=figSize)
     ax = f.add_subplot(111)
     for i, s in enumerate(samples):
         sampDF = df[df[sampleField]==s]
-        ax.plot(numpy.NaN, numpy.NaN, marker = 'o', color=colors[i], label=labelHash[s], markersize=markersize*1.5)
+        ax.plot(numpy.NaN, numpy.NaN, marker = 'o', color=colors[i], label=labelHash[s], markersize=markersize*1.5, markeredgewidth=markeredgewidth)
         if not normProtein is None:
-            normValue = sampDF[sampDF['Protein']==normProtein]['currentCalc'].median()
+            normValue = sampDF[sampDF[proteinField]==normProtein]['currentCalc'].median()
         else:
             normValue = 1.0
         for j, p in enumerate(proteins):
-            ax.plot([float(j+(i+1)*xOffset)]*len(sampDF[sampDF['Protein']==p]),
-                    sampDF[sampDF['Protein']==p]['currentCalc']/(normValue*scaleProt[p]), 
-                    'o', alpha=alpha, color=colors[i], markersize=markersize)
+            ax.plot([float(j+(i+1)*xOffset)]*len(sampDF[sampDF[proteinField]==p]),
+                    sampDF[sampDF[proteinField]==p]['currentCalc']/(normValue*scaleProt[p]), 
+                    'o', alpha=alpha, color=colors[i], markersize=markersize, markeredgewidth=markeredgewidth)
             if median:
                 try:
-                    ax.plot(float(j+(i+1)*xOffset), sampDF[sampDF['Protein']==p]['currentCalc'].median()/(normValue*scaleProt[p]), marker='_', 
+                    ax.plot(float(j+(i+1)*xOffset), sampDF[sampDF[proteinField]==p]['currentCalc'].median()/(normValue*scaleProt[p]), marker='_', 
                             mew=markersize/3, color='black', markersize=markersize*medianMarkerInc)
+                    #print str(s) + '\t' + str(p) + '\t' + str(sampDF[sampDF[proteinField]==p]['currentCalc'].median()/(normValue*scaleProt[p]))
                 except:
-                    'print error'
+                    print 'error'
     if legend:
         ax.legend(ncol=legendCols, loc=legendLoc, bbox_to_anchor=legendBBox,
                 fancybox=True, shadow=False)
@@ -152,7 +154,7 @@ def plotMRMCsv(df, samples = None, sampleField='File Name', colors=None, labelHa
 
 def css_styling(path = "/home/jhdavis/scripts/iPyNBs/custom.css", half=False):
     if half:
-        path = "/home/jhdavis/scripts/iPyNBs/half.css"
+        path = "/home/jhdavis/scripts/iPyNBs/custom2.css"
     styles = open(path, "r").read()
     return HTML(styles)
 
@@ -173,11 +175,26 @@ def getBCs(a,n, name=None):
         t='Qualitative'
         if name is None:
             name='Paired'
+    elif a is 'pD':
+        t = 'Qualitative'
+        if name is None:
+            name='Paired'
+    elif a is 'pL':
+        t = 'Qualitative'
+        if name is None:
+            name='Paired'    
     else:
         print 'incorrect color type given, expected "q", "s", "p", or "d"'
         return 'ERROR'
-    bmap = brewer2mpl.get_map(name, t, n)
-    return bmap.mpl_colors
+    bmap = brewer2mpl.get_map(name, t, n).mpl_colors
+    
+    if a is 'pL':
+        toReturn = [bmap[i] for i in range(0,len(bmap),2)]
+    elif a is 'pD':
+        toReturn = [bmap[i] for i in range(1,len(bmap),2)]
+    else:
+        toReturn = bmap
+    return toReturn
 
 def smoothListGaussian(data,degree=5):
     window=degree*2
